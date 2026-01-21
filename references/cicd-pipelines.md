@@ -1059,6 +1059,8 @@ jobs:
 
 ### GCP Workload Identity Setup
 
+**Using gcloud CLI:**
+
 ```bash
 # Create workload identity pool
 gcloud iam workload-identity-pools create "gitlab-pool" \
@@ -1084,6 +1086,163 @@ gcloud iam service-accounts add-iam-policy-binding \
   "sa-tf-admin@PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/iam.workloadIdentityUser" \
   --member="principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/gitlab-pool/attribute.project_path/YOUR_ORG/YOUR_REPO"
+```
+
+**Using OpenTofu/Terraform:**
+
+```hcl
+# variables.tf
+variable "project_id" {
+  description = "GCP project ID"
+  type        = string
+}
+
+variable "terraforming" {
+  description = "Terraforming configuration for CI/CD"
+  type = object({
+    enabled           = bool
+    repo_namespace_ids = optional(list(string), [])
+    delegated_repos   = optional(list(string), [])
+    jwks_json         = optional(string)
+  })
+  default = {
+    enabled = false
+  }
+}
+
+# locals.tf
+locals {
+  # Terraform admin service account (created when terraforming enabled)
+  tf_admin_account = var.terraforming.enabled ? [
+    {
+      id          = "sa-tf-admin"
+      name        = "TF Admin"
+      description = "Terraform Admin service account"
+      disabled    = false
+    }
+  ] : []
+
+  # Namespace condition for GitLab OIDC (restrict to specific groups/namespaces)
+  namespace_condition = var.terraforming.enabled && length(var.terraforming.repo_namespace_ids) > 0 ? (
+    join(" || ", [for id in var.terraforming.repo_namespace_ids : "assertion.namespace_id=='${id}'"])
+  ) : null
+
+  # Workload Identity pool configuration
+  tf_workload_identity_pool = var.terraforming.enabled ? [
+    {
+      id          = "gitlab-pool"
+      name        = "GitLab CI Pool"
+      description = "Workload Identity pool for GitLab CI/CD"
+      disabled    = false
+      providers = [
+        {
+          id          = "gitlab-provider"
+          name        = "GitLab OIDC Provider"
+          description = "OpenID Connect provider for GitLab"
+          disabled    = false
+          type        = "oidc"
+          attribute_mapping = {
+            "google.subject" = "assertion.project_path"
+          }
+          attribute_condition = local.namespace_condition
+          settings = {
+            issuer_uri = "https://gitlab.com/"
+            jwks_json  = var.terraforming.jwks_json
+          }
+        }
+      ]
+    }
+  ] : []
+
+  service_accounts        = { for sa in local.tf_admin_account : sa.id => sa }
+  workload_identity_pools = { for wp in local.tf_workload_identity_pool : wp.id => wp }
+}
+
+# main.tf
+resource "google_service_account" "tf_admin" {
+  for_each = local.service_accounts
+
+  project      = var.project_id
+  account_id   = each.value.id
+  display_name = each.value.name
+  description  = each.value.description
+  disabled     = each.value.disabled
+}
+
+resource "google_iam_workload_identity_pool" "pool" {
+  for_each = local.workload_identity_pools
+
+  project                   = var.project_id
+  workload_identity_pool_id = each.value.id
+  display_name              = each.value.name
+  description               = each.value.description
+  disabled                  = each.value.disabled
+}
+
+resource "google_iam_workload_identity_pool_provider" "provider" {
+  for_each = { for p in flatten([
+    for pool_key, pool in local.workload_identity_pools : [
+      for provider in pool.providers : {
+        pool_id     = pool_key
+        provider_id = provider.id
+        provider    = provider
+      }
+    ]
+  ]) : "${p.pool_id}-${p.provider_id}" => p }
+
+  project                            = var.project_id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.pool[each.value.pool_id].workload_identity_pool_id
+  workload_identity_pool_provider_id = each.value.provider_id
+  display_name                       = each.value.provider.name
+  description                        = each.value.provider.description
+  disabled                           = each.value.provider.disabled
+  attribute_mapping                  = each.value.provider.attribute_mapping
+  attribute_condition                = each.value.provider.attribute_condition
+
+  oidc {
+    issuer_uri = each.value.provider.settings.issuer_uri
+  }
+}
+
+# Grant workload identity user role to delegated repos
+resource "google_service_account_iam_member" "workload_identity_user" {
+  for_each = toset(var.terraforming.delegated_repos)
+
+  service_account_id = google_service_account.tf_admin["sa-tf-admin"].id
+  role               = "roles/iam.workloadIdentityUser"
+  member             = format(
+    "principal://iam.googleapis.com/%s/subject/%s",
+    google_iam_workload_identity_pool.pool["gitlab-pool"].name,
+    each.value
+  )
+}
+
+# Grant project owner to TF admin service account
+resource "google_project_iam_member" "tf_admin_owner" {
+  count   = var.terraforming.enabled ? 1 : 0
+  project = var.project_id
+  role    = "roles/owner"
+  member  = google_service_account.tf_admin["sa-tf-admin"].member
+}
+```
+
+**Example usage:**
+
+```hcl
+module "gcp_workload_identity" {
+  source = "./modules/gcp-workload-identity"
+
+  project_id = "my-project-dev"
+
+  terraforming = {
+    enabled            = true
+    repo_namespace_ids = ["12345678"]  # GitLab group/namespace ID
+    delegated_repos    = [
+      "my-org/infrastructure-live",
+      "my-org/infrastructure-catalog"
+    ]
+  }
+}
 ```
 
 ---
