@@ -1,0 +1,43 @@
+{
+  "name": "terragrunt-skill",
+  "owner": {
+    "name": "jfr992"
+  },
+  "metadata": {
+    "description": "Terragrunt infrastructure-as-code patterns with OpenTofu/Terraform",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "terragrunt",
+      "source": "./",
+      "description": "Best practices for Terragrunt stacks, units, and catalog patterns with CI/CD pipelines for AWS and GCP",
+      "version": "1.0.0",
+      "author": {
+        "name": "jfr992"
+      },
+      "repository": "https://github.com/jfr992/terragrunt-skill",
+      "license": "Apache-2.0",
+      "keywords": [
+        "terragrunt",
+        "opentofu",
+        "terraform",
+        "infrastructure-as-code",
+        "aws",
+        "gcp",
+        "devops"
+      ],
+      "category": "infrastructure",
+      "tags": [
+        "terragrunt",
+        "iac",
+        "stacks",
+        "units",
+        "cicd",
+        "aws",
+        "gcp"
+      ],
+      "strict": false
+    }
+  ]
+}
