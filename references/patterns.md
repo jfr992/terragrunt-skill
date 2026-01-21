@@ -99,6 +99,104 @@ This enables:
 - Git tags for each release (e.g., `v1.2.0`)
 - Units reference specific versions: `?ref=v1.2.0`
 
+### Modules in Catalog (Alternative - Monorepo)
+
+Alternatively, keep modules in the same repository as the catalog. This is the pattern used by [Gruntwork's terragrunt-infrastructure-catalog-example](https://github.com/gruntwork-io/terragrunt-infrastructure-catalog-example).
+
+```
+infrastructure-catalog/
+├── modules/                    # OpenTofu/Terraform modules
+│   ├── rds/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── eks/
+│   └── s3/
+├── units/                      # Terragrunt units (wrap modules)
+│   ├── rds/
+│   │   └── terragrunt.hcl
+│   └── eks/
+│       └── terragrunt.hcl
+└── stacks/                     # Terragrunt stacks
+    └── backend-api/
+        └── terragrunt.stack.hcl
+```
+
+**Units reference local modules:**
+
+```hcl
+# units/rds/terragrunt.hcl
+terraform {
+  source = "${get_repo_root()}/modules/rds"
+}
+```
+
+**Trade-offs:**
+
+| Monorepo (modules in catalog) | Multi-repo (separate module repos) |
+|-------------------------------|-------------------------------------|
+| Easier global changes across codebase | Independent versioning per module |
+| Single CI/CD pipeline | Dedicated CI/CD per module with Terratest |
+| Unified testing with Terratest | Clear team ownership boundaries |
+| Simpler initial setup | Pre-commit hooks per module |
+| Catalog version = module version | Isolated blast radius for changes |
+
+**When to use monorepo:**
+- Smaller teams with shared ownership
+- Rapid iteration during early development
+- Simpler governance requirements
+
+**When to use multi-repo:**
+- Large teams with distinct ownership
+- Strict versioning and release processes
+- Enterprise environments with compliance requirements
+
+### Boilerplate Modules Pattern
+
+A hybrid approach uses `/modules` for **catalog discovery** (scaffolding) while units reference **external modules**:
+
+```
+infrastructure-catalog/
+├── modules/                    # Boilerplate templates (for `terragrunt catalog`)
+│   └── rds/
+│       ├── main.tf             # Variable definitions for discovery
+│       └── .boilerplate/
+│           ├── boilerplate.yml # Interactive prompts
+│           └── terragrunt.hcl  # Template → external module
+├── units/                      # Actual Terragrunt configs
+│   └── rds/
+│       └── terragrunt.hcl      # References external module
+└── stacks/
+```
+
+**Boilerplate template:**
+
+```yaml
+# modules/rds/.boilerplate/boilerplate.yml
+variables:
+  - name: ModuleVersion
+    description: "Module version to use"
+    type: string
+    default: "v1.0.0"
+  - name: InstanceClass
+    description: "RDS instance class"
+    type: string
+    default: "db.t3.medium"
+```
+
+```hcl
+# modules/rds/.boilerplate/terragrunt.hcl
+terraform {
+  source = "git::git@github.com:YOUR_ORG/modules/rds.git//app?ref={{ .ModuleVersion }}"
+}
+
+inputs = {
+  instance_class = "{{ .InstanceClass }}"
+}
+```
+
+This enables `terragrunt catalog` to show available modules with interactive scaffolding while keeping actual module code in separate repos.
+
 ### Unit Source Pattern
 
 Units reference external module repos via Git URL:
@@ -109,9 +207,19 @@ terraform {
 }
 ```
 
+**Or reference public modules:**
+
+```hcl
+terraform {
+  # Using terraform-aws-modules (public)
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-s3-bucket.git?ref=${try(values.version, "v4.0.0")}"
+}
+```
+
 Key points:
-- `//app` - Path within the module repo
+- `//app` - Path within the module repo (submodule)
 - `?ref=${values.version}` - Version comes from stack's values
+- Can mix public and private modules in the same catalog
 
 ## Values Pattern
 
