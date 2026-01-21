@@ -1,0 +1,97 @@
+name: Automated Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Conventional Changelog
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          git-user-name: "github-actions[bot]"
+          git-user-email: "github-actions[bot]@users.noreply.github.com"
+          version-file: ".claude-plugin/marketplace.json"
+          version-path: "metadata.version"
+          preset: "angular"
+          tag-prefix: "v"
+          output-file: "CHANGELOG.md"
+          skip-commit: false
+          skip-version-file: false
+
+      - name: Sync versions across files
+        if: steps.changelog.outputs.skipped == 'false'
+        run: |
+          VERSION="${{ steps.changelog.outputs.version }}"
+          echo "Syncing version $VERSION across files..."
+
+          # Update plugin version in marketplace.json
+          python3 << 'EOF'
+          import json
+
+          version = "${{ steps.changelog.outputs.version }}"
+
+          with open(".claude-plugin/marketplace.json", "r") as f:
+              data = json.load(f)
+
+          # Update metadata version (already done by changelog action)
+          # Update plugin version
+          if "plugins" in data and len(data["plugins"]) > 0:
+              data["plugins"][0]["version"] = version
+              print(f"Updated plugin version to {version}")
+          else:
+              print("Error: No plugins found in marketplace.json")
+              exit(1)
+
+          with open(".claude-plugin/marketplace.json", "w") as f:
+              json.dump(data, f, indent=2)
+              f.write("\n")
+
+          print("marketplace.json updated successfully")
+          EOF
+
+          # Commit version sync if changes were made
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .claude-plugin/marketplace.json
+          git diff --staged --quiet || git commit -m "chore: sync plugin version to $VERSION"
+          git push
+
+      - name: Create GitHub Release
+        if: steps.changelog.outputs.skipped == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: steps.changelog.outputs.skipped == 'false'
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.changelog.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ steps.changelog.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Changelog" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.changelog.outputs.clean_changelog }}" >> $GITHUB_STEP_SUMMARY
