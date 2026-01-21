@@ -1,5 +1,6 @@
-# Serverless API Stack
-# Deploys: DynamoDB table + Lambda function + S3 bucket for artifacts
+# Serverless API Stack (Template)
+# Deploys: S3 bucket + DynamoDB table + Lambda function
+# Usage: Reference this stack from live repo and pass values
 
 locals {
   service     = values.service
@@ -32,7 +33,7 @@ unit "s3" {
       status = "Enabled"
     }
 
-    lifecycle_rule = [
+    lifecycle_rule = try(values.s3_lifecycle_rules, [
       {
         id      = "cleanup-old-versions"
         enabled = true
@@ -40,7 +41,7 @@ unit "s3" {
           days = 30
         }
       }
-    ]
+    ])
 
     tags = local.common_tags
   }
@@ -52,9 +53,9 @@ unit "dynamodb" {
   path   = "dynamodb"
 
   values = {
-    version  = try(values.dynamodb_module_version, "v1.0.0")
-    name     = local.table_name
-    hash_key = try(values.dynamodb_hash_key, "PK")
+    version   = try(values.dynamodb_module_version, "v1.0.0")
+    name      = local.table_name
+    hash_key  = try(values.dynamodb_hash_key, "PK")
     range_key = try(values.dynamodb_range_key, "SK")
 
     attributes = try(values.dynamodb_attributes, [
