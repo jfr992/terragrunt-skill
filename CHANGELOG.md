@@ -1,3 +1,12 @@
+# [1.3.0](https://github.com/jfr992/terragrunt-skill/compare/v1.2.0...v1.3.0) (2026-01-22)
+
+
+### Features
+
+* update CLAUDE.md with architecture options and validation workflow ([ade3bcb](https://github.com/jfr992/terragrunt-skill/commit/ade3bcba481c8f2850ce39ea5b465cd9e1c54210))
+
+
+
 # [1.2.0](https://github.com/jfr992/terragrunt-skill/compare/v1.1.0...v1.2.0) (2026-01-22)
 
 

@@ -3,7 +3,7 @@
   "owner": {
     "name": "jfr992"
   },
-  "version": "1.2.0",
+  "version": "1.3.0",
   "metadata": {
     "description": "Terragrunt infrastructure-as-code patterns with OpenTofu/Terraform - stacks, units, catalog patterns, CI/CD pipelines",
     "repository": "https://github.com/jfr992/terragrunt-skill",
