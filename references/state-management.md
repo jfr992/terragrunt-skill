@@ -85,7 +85,46 @@ Before first Terragrunt run, create:
 
 ### Setup Script
 
-Use the provided `setup-state-backend.sh`:
+> **Note:** This script currently only supports AWS (S3 + DynamoDB). GCP and Azure are not yet supported.
+
+The `setup-state-backend.sh` script auto-discovers accounts, regions, and environments from your directory structure and creates S3 buckets and DynamoDB lock tables.
+
+#### Required Directory Structure
+
+```
+infrastructure-live/
+├── setup-state-backend.sh        # Run from here
+├── root.hcl
+├── <account>/                    # Directory name (e.g., "non-prod", "prod")
+│   ├── account.hcl               # REQUIRED
+│   └── <region>/                 # AWS region (e.g., "us-east-1")
+│       ├── region.hcl
+│       ├── env.hcl               # Optional: region-level state bucket
+│       └── <environment>/        # Environment (e.g., "staging", "dev")
+│           ├── env.hcl           # Optional: env-level state bucket
+│           └── <service>/
+│               └── terragrunt.stack.hcl
+```
+
+#### Required HCL Variables
+
+**account.hcl** (required):
+```hcl
+locals {
+  account_name   = "myproject-nonprod"  # Used in bucket name
+  aws_account_id = "123456789012"       # For bucket policy
+}
+```
+
+**env.hcl** (optional - for environment isolation):
+```hcl
+locals {
+  environment         = "staging"
+  state_bucket_suffix = local.environment  # Creates separate bucket
+}
+```
+
+#### Usage
 
 ```bash
 # Create all state backends (auto-discovers from directory structure)
@@ -98,11 +137,19 @@ Use the provided `setup-state-backend.sh`:
 ./setup-state-backend.sh --account prod
 ```
 
+#### What It Creates
+
+For each discovered account/region/environment:
+- **S3 Bucket** with versioning, KMS encryption, public access blocked, TLS-enforced policy
+- **DynamoDB Table** with `LockID` key for state locking
+
 The script:
 - Parses account.hcl and env.hcl files
 - Creates S3 buckets with versioning, encryption, and TLS enforcement
 - Creates DynamoDB tables for locking
 - Supports dry-run mode
+
+Reference: [setup-state-backend.sh](../scripts/setup-state-backend.sh)
 
 ## State Migration
 
