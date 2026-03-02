@@ -1,4 +1,4 @@
-# [1.4.0](https://github.com/jfr992/terragrunt-skill/compare/v1.3.0...v1.4.0) (2026-03-02)
+# [1.5.0](https://github.com/jfr992/terragrunt-skill/compare/v1.3.0...v1.5.0) (2026-03-02)
 
 
 ### Bug Fixes
