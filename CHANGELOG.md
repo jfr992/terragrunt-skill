@@ -1,3 +1,17 @@
+# [1.4.0](https://github.com/jfr992/terragrunt-skill/compare/v1.3.0...v1.4.0) (2026-03-02)
+
+
+### Bug Fixes
+
+* align SKILL.md name with marketplace.json plugin name ([80a4c9d](https://github.com/jfr992/terragrunt-skill/commit/80a4c9dc51ecfeffb2c64207da8de7309f4dc44f))
+
+
+### Features
+
+* refactor SKILL.md to navigation hub with progressive disclosure ([8ce8c02](https://github.com/jfr992/terragrunt-skill/commit/8ce8c02425f2cc3953167a326d0e0b36ed63a40e))
+
+
+
 # [1.3.0](https://github.com/jfr992/terragrunt-skill/compare/v1.2.0...v1.3.0) (2026-01-22)
 
 
