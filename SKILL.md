@@ -1,5 +1,5 @@
 ---
-name: terragrunt
+name: terragrunt-skill
 description: |
   Use this skill when working with Terragrunt infrastructure configurations. Triggers include:
   - Setting up a new Terragrunt infrastructure catalog from scratch
