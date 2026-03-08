@@ -66,11 +66,11 @@ provider "aws" {
 
   assume_role {
     role_arn = "${local.role_arn}"
-    allowed_account_ids = [
-      "${local.account_id_1}",
-      "${local.account_id_2}
-    ]
   }
+  allowed_account_ids = [
+    "${local.account_id_1}",
+    "${local.account_id_2}
+  ]
 }
 EOF
 }
