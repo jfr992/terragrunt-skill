@@ -1,24 +1,19 @@
 ---
 name: terragrunt-skill
-description: |
-  Use this skill when working with Terragrunt infrastructure configurations. Triggers include:
-  - Setting up a new Terragrunt infrastructure catalog from scratch
-  - Creating or managing Terragrunt stacks (terragrunt.stack.hcl)
-  - Creating units that wrap OpenTofu modules from separate repos
-  - Configuring live infrastructure repositories with root.hcl hierarchy
-  - Setting up remote state backends (S3 with DynamoDB locking)
-  - Multi-account/multi-environment deployments with cross-account role assumption
+description: "Use this skill when working with Terragrunt infrastructure configurations. Triggers include: setting up a new Terragrunt infrastructure catalog from scratch, creating or managing Terragrunt stacks (terragrunt.stack.hcl), creating units that wrap OpenTofu modules from separate repos, configuring live infrastructure repositories with root.hcl hierarchy, setting up remote state backends (S3 with DynamoDB locking), and multi-account/multi-environment deployments with cross-account role assumption."
 ---
 
 # Terragrunt Infrastructure Skill
 
 ## Overview
 
-This skill provides guidance for infrastructure using Terragrunt with OpenTofu, following a three-repository pattern:
+Terragrunt with OpenTofu, following a three-repository pattern:
 
-1. **Infrastructure Catalog** - Units and stacks that reference modules from separate repos
-2. **Infrastructure Live** - Environment-specific deployments consuming the catalog
-3. **Module Repos** - Separate repositories for each OpenTofu module (independent versioning)
+| Repository | Purpose |
+|-----------|---------|
+| **Infrastructure Catalog** | Reusable units and stacks referencing modules from separate repos |
+| **Infrastructure Live** | Environment-specific deployments consuming the catalog |
+| **Module Repos** | Separate repos per OpenTofu module (independent versioning) |
 
 ## Quick Navigation
 
@@ -77,18 +72,63 @@ terraform {
 
 ### Create New Unit
 
-1. Create `units/<name>/terragrunt.hcl`
-2. Reference module via Git URL with `${values.version}`
-3. Use `values.xxx` for inputs
-4. Add dependencies with mock outputs
-5. Implement reference resolution for `"../unit"` patterns
+Create `units/<name>/terragrunt.hcl` with module source, values-driven inputs, dependencies, and reference resolution:
+
+```hcl
+terraform {
+  source = "git::git@github.com:YOUR_ORG/modules/rds.git//app?ref=${values.version}"
+}
+
+dependency "vpc" {
+  config_path = try(values.vpc_path, "../vpc")
+  mock_outputs = {
+    vpc_id             = "vpc-mock"
+    private_subnet_ids = ["subnet-mock-1", "subnet-mock-2"]
+  }
+}
+
+inputs = {
+  name           = values.name
+  environment    = values.environment
+  instance_class = try(values.instance_class, "db.t3.medium")
+  vpc_id         = dependency.vpc.outputs.vpc_id
+  subnet_ids     = dependency.vpc.outputs.private_subnet_ids
+}
+```
+
+Validate before proceeding: `terragrunt validate` then `terragrunt plan` to verify dependency resolution.
 
 ### Create New Stack
 
-1. Create `stacks/<name>/terragrunt.stack.hcl`
-2. Define `locals` for computed values
-3. Add `unit` blocks referencing catalog units
-4. Pass values including version and dependency paths
+Create `stacks/<name>/terragrunt.stack.hcl` with locals, unit blocks, and dependency wiring:
+
+```hcl
+locals {
+  env     = "staging"
+  version = "v1.2.0"
+}
+
+unit "vpc" {
+  source = "${get_repo_root()}/units/vpc"
+  values = {
+    name        = "main-vpc"
+    environment = local.env
+    version     = local.version
+  }
+}
+
+unit "rds" {
+  source = "${get_repo_root()}/units/rds"
+  values = {
+    name        = "app-db"
+    environment = local.env
+    version     = local.version
+    vpc_path    = "../vpc"
+  }
+}
+```
+
+Validate the stack: `terragrunt stack generate` to verify unit resolution, then `terragrunt stack plan` to check the full dependency graph.
 
 ### Deploy to New Environment
 
@@ -96,6 +136,9 @@ terraform {
 2. Add `env.hcl` with `state_bucket_suffix`
 3. Run `./setup-state-backend.sh` to create state resources
 4. Add stack files referencing catalog
+5. Validate: run `terragrunt validate` then `terragrunt plan` on the new environment before applying
+
+If validation fails: check `root.hcl` includes are correct and `env.hcl` locals match expected names. If state backend setup fails: verify IAM permissions, S3 bucket policies, and DynamoDB table exists. Re-run `./setup-state-backend.sh` after fixing.
 
 ## Best Practices
 
