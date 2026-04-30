@@ -1,0 +1,5 @@
+{
+  "name": "terragrunt-skill",
+  "version": "1.5.0",
+  "description": "Terragrunt infrastructure-as-code patterns with OpenTofu/Terraform"
+}

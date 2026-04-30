@@ -3,14 +3,14 @@ name: Validate Skill
 on:
   pull_request:
     paths:
-      - 'SKILL.md'
-      - 'references/**/*.md'
+      - 'skills/terragrunt-skill/SKILL.md'
+      - 'skills/terragrunt-skill/references/**/*.md'
       - '.claude-plugin/**'
   push:
     branches: [master, main]
     paths:
-      - 'SKILL.md'
-      - 'references/**/*.md'
+      - 'skills/terragrunt-skill/SKILL.md'
+      - 'skills/terragrunt-skill/references/**/*.md'
       - '.claude-plugin/**'
   workflow_dispatch:
 
@@ -40,7 +40,7 @@ jobs:
 
           print("🔍 Validating SKILL.md frontmatter...")
 
-          with open('SKILL.md', 'r') as f:
+          with open('skills/terragrunt-skill/SKILL.md', 'r') as f:
               content = f.read()
 
           if not content.startswith('---'):
@@ -77,8 +77,8 @@ jobs:
 
       - name: Check File Size
         run: |
-          LINES=$(wc -l < SKILL.md)
-          WORDS=$(wc -w < SKILL.md)
+          LINES=$(wc -l < skills/terragrunt-skill/SKILL.md)
+          WORDS=$(wc -w < skills/terragrunt-skill/SKILL.md)
           echo "📊 SKILL.md: $LINES lines, $WORDS words"
           if [ $LINES -gt 1000 ]; then
             echo "⚠️  WARNING: $LINES lines (guideline: <1000)"
@@ -138,8 +138,9 @@ jobs:
         run: |
           echo "🔍 Checking internal links..."
           BROKEN=0
-          for link in $(grep -oP '\(references/[^)]+\.md[^)]*\)' SKILL.md 2>/dev/null | sed 's/[()]//g' | sed 's/#.*//'); do
-            if [ ! -f "$link" ]; then
+          SKILL_DIR="skills/terragrunt-skill"
+          for link in $(grep -oP '\(references/[^)]+\.md[^)]*\)' "$SKILL_DIR/SKILL.md" 2>/dev/null | sed 's/[()]//g' | sed 's/#.*//'); do
+            if [ ! -f "$SKILL_DIR/$link" ]; then
               echo "❌ ERROR: Broken link: $link"
               BROKEN=1
             fi

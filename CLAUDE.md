@@ -68,20 +68,23 @@ Units resolve symbolic references like `"../acm"` to actual dependency outputs, 
 
 ```
 terragrunt-skill/
-├── SKILL.md                    # Main skill (loaded by Claude Code)
 ├── CLAUDE.md                   # This file (memory/contributor guide)
 ├── README.md                   # Repository documentation
 ├── .claude-plugin/
+│   ├── plugin.json             # Plugin manifest
 │   └── marketplace.json        # Claude Code marketplace distribution
 ├── .github/workflows/
 │   ├── validate.yml            # Skill validation (frontmatter, links)
 │   └── automated-release.yml   # Conventional commits → GitHub releases
-├── assets/
-│   ├── catalog-structure/      # Example catalog layout
-│   ├── live-structure/         # Example live repo layout
-│   └── images/                 # Screenshots and diagrams
-├── references/                 # Extended documentation
-├── scripts/                    # Helper scripts (setup-state-backend.sh)
+├── skills/
+│   └── terragrunt-skill/
+│       ├── SKILL.md            # Main skill (loaded by Claude Code)
+│       ├── references/         # Extended documentation
+│       ├── assets/
+│       │   ├── catalog-structure/  # Example catalog layout
+│       │   ├── live-structure/     # Example live repo layout
+│       │   └── images/             # Screenshots and diagrams
+│       └── scripts/            # Helper scripts (setup-state-backend.sh)
 └── test-output/                # Generated test examples
 ```
 
