@@ -1,3 +1,21 @@
+# [1.6.0](https://github.com/jfr992/terragrunt-skill/compare/v1.5.1...v1.6.0) (2026-04-30)
+
+
+### Bug Fixes
+
+* restructure repo as proper Claude Code plugin ([#5](https://github.com/jfr992/terragrunt-skill/issues/5)) ([6d8505f](https://github.com/jfr992/terragrunt-skill/commit/6d8505fe110eb4423e1b62cc28858a75efc8e21c))
+
+
+### Features
+
+* add author metadata to plugin manifest ([87a1707](https://github.com/jfr992/terragrunt-skill/commit/87a1707510d594440c8cf9bb60a199d24c403079))
+
+
+
+## [1.5.1](https://github.com/jfr992/terragrunt-skill/compare/v1.5.0...v1.5.1) (2026-04-06)
+
+
+
 # [1.5.0](https://github.com/jfr992/terragrunt-skill/compare/v1.3.0...v1.5.0) (2026-03-02)
 
 
@@ -27,21 +45,6 @@
 ### Features
 
 * update based on maintainer feedback and add validation ([7f7b7dc](https://github.com/jfr992/terragrunt-skill/commit/7f7b7dcc196da8261b14794e151aecc5dec36d62))
-
-
-
-# [1.1.0](https://github.com/jfr992/terragrunt-skill/compare/7a1582c3ab4598a0ca4fbdd4424f137ed8aa7d6d...v1.1.0) (2026-01-21)
-
-
-### Bug Fixes
-
-* correct test output to follow documented patterns ([5de3355](https://github.com/jfr992/terragrunt-skill/commit/5de3355bc8cda0e7df796ccbca6db1f72f5ccb84))
-
-
-### Features
-
-* add automated release workflow with conventional commits ([7a1582c](https://github.com/jfr992/terragrunt-skill/commit/7a1582c3ab4598a0ca4fbdd4424f137ed8aa7d6d))
-* update CI/CD pipelines for terragrunt stack commands ([19c6949](https://github.com/jfr992/terragrunt-skill/commit/19c6949b549ed402ee74558e9b59e2e180781e67))
 
 
 
