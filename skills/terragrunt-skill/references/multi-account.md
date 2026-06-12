@@ -1,5 +1,13 @@
 # Multi-Account Strategy
 
+## Contents
+- Account Structure
+- Live Repository Structure
+- Cross-Account Access
+- Environment Isolation
+- Cross-Account DNS
+- Deployment Order
+
 ## Account Structure
 
 Recommended AWS account structure:
@@ -22,7 +30,6 @@ Organization
 ```
 infrastructure-live/
 ├── root.hcl
-├── setup-state-backend.sh
 ├── shared-services/
 │   ├── account.hcl
 │   └── us-east-1/
@@ -185,9 +192,9 @@ Deploy shared infrastructure first:
 4. Shared services (VPC, Transit Gateway)
 5. Workload accounts (non-prod, prod)
 
-Use `run-all` with dependency ordering:
+Use `run --all` with dependency ordering:
 
 ```bash
 cd infrastructure-live
-terragrunt run-all apply
+terragrunt run --all apply
 ```

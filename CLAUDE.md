@@ -6,13 +6,25 @@ This file serves as context for Claude Code when working on the terragrunt-skill
 
 This skill uses **progressive disclosure** to minimize token usage:
 
-- **SKILL.md** (~960 lines): Core patterns for Terragrunt stacks, units, and catalog structure
+- **SKILL.md** (~140 lines): Core patterns for Terragrunt stacks, units, and catalog structure
 - **references/**: Extended documentation loaded on demand
-  - `cicd-pipelines.md`: GitLab CI and GitHub Actions with AWS/GCP OIDC
-  - `patterns.md`: Repository separation, pre-commit hooks, semantic versioning
-  - `performance.md`: Provider caching, benchmarking tools, optimization
-  - `state-management.md`: S3/DynamoDB backend patterns
-  - `multi-account.md`: Cross-account role assumption patterns
+  - `catalog-scaffolding.md`: Interactive catalog browsing and unit scaffolding
+  - `catalog-structure.md`: Directory layout and organization of reusable units and stacks
+  - `cicd-github.md`: GitHub Actions pipelines (quick reference and OIDC patterns)
+  - `cicd-gitlab.md`: GitLab CI pipelines (templates, AWS/GCP OIDC auth, unit targeting)
+  - `cicd-pipelines.md`: Shared CI/CD concepts, run reports, IAM/OIDC cloud setup
+  - `classic-live-structure.md`: Traditional account/region/environment hierarchy pattern
+  - `dependencies.md`: Unit interdependency patterns and DAG management
+  - `discovery-commands.md`: terragrunt find and exploration commands
+  - `live-structure.md`: Explicit stacks directory layout and organization
+  - `modules-monorepo.md`: Monorepo vs per-repo module versioning strategies
+  - `multi-account.md`: Cross-account role assumption and AWS account strategy
+  - `naming.md`: Repository and resource naming conventions
+  - `patterns.md`: Terragrunt patterns guide and repository separation
+  - `performance.md`: Provider caching, benchmarking tools, and optimization
+  - `root-config.md`: Root.hcl configuration and locals setup
+  - `stack-commands.md`: Stack generation and execution commands
+  - `state-management.md`: State backend configuration: native S3 lockfile (OpenTofu >= 1.10) and legacy DynamoDB patterns
 - **.claude-plugin/**: Marketplace distribution configuration
 - **.github/workflows/**: CI/CD for validation and automated releases
 
@@ -37,6 +49,8 @@ This skill uses **progressive disclosure** to minimize token usage:
 
 ## Key Patterns
 
+**Watch:** `terragrunt.autoinclude.hcl` exists in upstream code but is not yet documented — do not teach it until docs.terragrunt.com covers it.
+
 ### Values Pattern
 Units receive ALL configuration through the `values` object, enabling stacks to configure units without modifying unit code.
 
@@ -59,7 +73,7 @@ Units resolve symbolic references like `"../acm"` to actual dependency outputs, 
 4. Check that patterns match Terragrunt best practices
 
 ### Validation
-- Run `terragrunt hclfmt --check` on generated examples
+- Run `terragrunt hcl fmt --check` on generated examples
 - Verify stack files with `terragrunt stack generate`
 - Test unit dependency resolution
 - CI validates SKILL.md frontmatter and marketplace.json on every PR
@@ -70,6 +84,8 @@ Units resolve symbolic references like `"../acm"` to actual dependency outputs, 
 terragrunt-skill/
 ├── CLAUDE.md                   # This file (memory/contributor guide)
 ├── README.md                   # Repository documentation
+├── evaluations/                # Trigger/behavior eval scenarios (manual harness)
+│   └── evaluations.json
 ├── .claude-plugin/
 │   ├── plugin.json             # Plugin manifest
 │   └── marketplace.json        # Claude Code marketplace distribution
@@ -80,11 +96,10 @@ terragrunt-skill/
 │   └── terragrunt-skill/
 │       ├── SKILL.md            # Main skill (loaded by Claude Code)
 │       ├── references/         # Extended documentation
-│       ├── assets/
-│       │   ├── catalog-structure/  # Example catalog layout
-│       │   ├── live-structure/     # Example live repo layout
-│       │   └── images/             # Screenshots and diagrams
-│       └── scripts/            # Helper scripts (setup-state-backend.sh)
+│       └── assets/
+│           ├── catalog-structure/  # Example catalog layout
+│           ├── live-structure/     # Example live repo layout
+│           └── images/             # Screenshots and diagrams
 └── test-output/                # Generated test examples
 ```
 
@@ -99,10 +114,10 @@ Contributions should:
 
 ## References
 
-- [Terragrunt Documentation](https://terragrunt.gruntwork.io/docs/)
-- [Terragrunt Stacks](https://terragrunt.gruntwork.io/docs/features/stacks/)
-- [Terragrunt Filters](https://terragrunt.gruntwork.io/docs/features/filter/)
-- [Terragrunt State Backend](https://terragrunt.gruntwork.io/docs/features/state-backend/)
-- [Terragrunt Catalog](https://terragrunt.gruntwork.io/docs/features/catalog/)
+- [Terragrunt Documentation](https://docs.terragrunt.com/)
+- [Terragrunt Stacks](https://docs.terragrunt.com/features/stacks/)
+- [Terragrunt Filters](https://docs.terragrunt.com/features/filter/)
+- [Terragrunt State Backend](https://docs.terragrunt.com/features/units/state-backend/)
+- [Terragrunt Catalog](https://docs.terragrunt.com/features/catalog/)
 - [Boilerplate](https://github.com/gruntwork-io/boilerplate) - Template generation for scaffolding
 - [OpenTofu Documentation](https://opentofu.org/docs/)

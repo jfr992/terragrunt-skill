@@ -1,11 +1,17 @@
 # Infrastructure Live Structure
 
+## Contents
+- Directory Layout
+- Example Structure
+- Configuration Hierarchy
+- State Isolation
+- References
+
 ## Directory Layout
 
 ```
 infrastructure-live/
 ├── root.hcl                    # Root configuration
-├── setup-state-backend.sh      # State bucket setup script
 ├── <account>/                  # Account directories
 │   ├── account.hcl             # Account config (id, name, role_arn, vpc, tags)
 │   └── <region>/
@@ -22,7 +28,6 @@ infrastructure-live/
 ```
 infrastructure-live/
 ├── root.hcl
-├── setup-state-backend.sh
 ├── non-prod/
 │   ├── account.hcl
 │   └── us-east-1/

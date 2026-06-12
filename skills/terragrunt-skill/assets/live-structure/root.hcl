@@ -83,12 +83,12 @@ EOF
 remote_state {
   backend = "s3"
   config = {
-    encrypt        = true
-    bucket         = format("tfstate-%s%s-%s", local.account_name, try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "", local.aws_region)
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = local.aws_region
-    dynamodb_table = format("tfstate-locks-%s%s-%s", local.account_name, try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "", local.aws_region)
-    role_arn       = local.role_arn
+    encrypt      = true
+    bucket       = format("tfstate-%s%s-%s", local.account_name, try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "", local.aws_region)
+    key          = "${path_relative_to_include()}/terraform.tfstate"
+    region       = local.aws_region
+    use_lockfile = true
+    role_arn     = local.role_arn
   }
   generate = {
     path      = "backend.tf"

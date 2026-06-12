@@ -13,6 +13,8 @@ terragrunt catalog
 
 This displays all available units and stacks from the configured catalog.
 
+![Terragrunt catalog TUI](../assets/images/terragrunt-catalog.png)
+
 ## Catalog Configuration in root.hcl
 
 ```hcl
@@ -91,5 +93,5 @@ When scaffolding, Terragrunt:
 
 ## References
 
-- [Terragrunt Catalog Documentation](https://terragrunt.gruntwork.io/docs/features/catalog/)
+- [Terragrunt Catalog Documentation](https://docs.terragrunt.com/features/catalog/)
 - [Boilerplate Documentation](https://github.com/gruntwork-io/boilerplate)
