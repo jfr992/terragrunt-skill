@@ -1,0 +1,17 @@
+{
+  "skill": "terragrunt-skill",
+  "should_trigger": [
+    {"query": "Set up a new Terragrunt catalog with units for VPC and EKS", "expected_behavior": ["Loads skill", "Uses explicit stacks (catalog + terragrunt.stack.hcl + values) as default", "Reads catalog-structure.md"]},
+    {"query": "I have an infrastructure-live repo with _envcommon and account/region/env folders — add a new RDS component to staging", "expected_behavior": ["Loads skill", "Recognizes classic implicit-stacks layout", "Reads classic-live-structure.md", "Uses include root + envcommon with expose, modern CLI (run --all, use_lockfile)"]},
+    {"query": "Migrate our monolithic Terraform repo to Terragrunt", "expected_behavior": ["Loads skill", "References the terralith-to-terragrunt migration guidance"]},
+    {"query": "Configure S3 remote state with locking for OpenTofu 1.10", "expected_behavior": ["Loads skill", "Recommends use_lockfile = true, not DynamoDB", "Mentions terragrunt backend bootstrap"]},
+    {"query": "What units exist in this Terragrunt repo and what depends on what?", "expected_behavior": ["Loads skill", "Uses terragrunt find --json --dependencies or terragrunt list --tree"]},
+    {"query": "Add a GitLab CI pipeline that plans and applies our Terragrunt stacks with OIDC to AWS", "expected_behavior": ["Loads skill", "Reads cicd-pipelines.md and cicd-gitlab.md", "Uses stack run / run --all with OIDC templates"]}
+  ],
+  "should_not_trigger": [
+    {"query": "Write a Terraform module for an S3 bucket with versioning", "reason": "Pure module authoring, no Terragrunt orchestration — terraform-skill territory"},
+    {"query": "Why is my Kubernetes pod stuck in CrashLoopBackOff?", "reason": "Unrelated domain"},
+    {"query": "Explain HCL syntax for dynamic blocks", "reason": "Generic HCL language feature, excluded by skill's content philosophy"}
+  ],
+  "notes": "Manual harness: run each query in a fresh Claude Code session with the skill installed; verify trigger + expected behaviors. No automated runner yet."
+}
