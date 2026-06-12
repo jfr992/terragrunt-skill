@@ -10,7 +10,9 @@ This skill uses **progressive disclosure** to minimize token usage:
 - **references/**: Extended documentation loaded on demand
   - `catalog-scaffolding.md`: Interactive catalog browsing and unit scaffolding
   - `catalog-structure.md`: Directory layout and organization of reusable units and stacks
-  - `cicd-pipelines.md`: GitLab CI and GitHub Actions with AWS/GCP OIDC
+  - `cicd-github.md`: GitHub Actions pipelines (quick reference and OIDC patterns)
+  - `cicd-gitlab.md`: GitLab CI pipelines (templates, AWS/GCP OIDC auth, unit targeting)
+  - `cicd-pipelines.md`: Shared CI/CD concepts, run reports, IAM/OIDC cloud setup
   - `classic-live-structure.md`: Traditional account/region/environment hierarchy pattern
   - `dependencies.md`: Unit interdependency patterns and DAG management
   - `discovery-commands.md`: terragrunt find and exploration commands
@@ -82,6 +84,8 @@ Units resolve symbolic references like `"../acm"` to actual dependency outputs, 
 terragrunt-skill/
 ├── CLAUDE.md                   # This file (memory/contributor guide)
 ├── README.md                   # Repository documentation
+├── evaluations/                # Trigger/behavior eval scenarios (manual harness)
+│   └── evaluations.json
 ├── .claude-plugin/
 │   ├── plugin.json             # Plugin manifest
 │   └── marketplace.json        # Claude Code marketplace distribution
