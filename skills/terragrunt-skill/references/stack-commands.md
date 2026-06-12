@@ -110,6 +110,6 @@ The `.terragrunt-stack` directory is auto-generated when running stack commands:
 
 ## References
 
-- [Terragrunt Stacks Documentation](https://terragrunt.gruntwork.io/docs/features/stacks/)
-- [Filter Expressions](https://terragrunt.gruntwork.io/docs/features/filter/)
+- [Terragrunt Stacks Documentation](https://docs.terragrunt.com/features/stacks/)
+- [Filter Expressions](https://docs.terragrunt.com/features/filter/)
 - [CI/CD Pipelines](cicd-pipelines.md)
