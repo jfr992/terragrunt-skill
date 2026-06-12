@@ -9,6 +9,16 @@ The classic Gruntwork pattern: units organized in an account/region/environment 
 
 **Prefer [explicit stacks](stack-commands.md) for new builds** — they eliminate the per-unit boilerplate this pattern requires. To migrate classic → stacks, see the official [Terralith to Terragrunt guide](https://docs.terragrunt.com/guides/terralith-to-terragrunt/).
 
+## Contents
+- Directory Layout
+- root.hcl
+- Level files
+- _envcommon: shared component config
+- Unit terragrunt.hcl
+- Dependencies between components
+- Running
+- Trade-offs vs explicit stacks
+
 ## Directory Layout
 
 ```

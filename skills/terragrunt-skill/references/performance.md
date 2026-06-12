@@ -1,5 +1,19 @@
 # Performance Optimization Guide
 
+## Contents
+- Overview
+- Easy Wins
+- Provider Caching (OpenTofu >= 1.10: automatic)
+- Content-Addressed Store (CAS) — experiment
+- Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
+- Dependency Output Fetching (Experimental)
+- Advanced: Two-Layer Provider Caching
+- Explicit vs Implicit Stacks
+- Measuring Performance
+- CI/CD Optimization
+- Parallelism Tuning
+- References
+
 ## Overview
 
 Terragrunt operations can be significantly accelerated through proper caching and configuration. With provider caching enabled, you can achieve:

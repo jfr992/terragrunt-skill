@@ -1,5 +1,13 @@
 # CI/CD Pipeline Examples
 
+## Contents
+- Overview
+- Terragrunt Stack Commands
+- Run Reports and Strict Mode in CI
+- Platform Pipelines
+- IAM Configuration
+- References
+
 ## Overview
 
 This guide provides CI/CD pipeline templates for **Terragrunt Stacks** (explicit stacks using `terragrunt.stack.hcl`). These templates are suggestions that can be adapted to your organization's needs.

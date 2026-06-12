@@ -1,5 +1,11 @@
 # Infrastructure Catalog Structure
 
+## Contents
+- Directory Layout
+- Units
+- Stacks
+- References
+
 ## Directory Layout
 
 ```
