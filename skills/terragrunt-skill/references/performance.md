@@ -224,6 +224,6 @@ Recommendations:
 
 ## References
 
-- [Terragrunt Performance Troubleshooting](https://terragrunt.gruntwork.io/docs/troubleshooting/performance/)
+- [Terragrunt Performance Troubleshooting](https://docs.terragrunt.com/troubleshooting/performance/)
 - [Explicit Terragrunt Stacks: 2x Faster Runs Using Provider Cache](https://www.linkedin.com/pulse/explicit-terragrunt-stacks-2x-faster-runs-using-provider-juan-reyes-ucsre/)
 - [Terragrunt Cache Benchmark Test Suite](https://github.com/jfr992/terragrunt-cache-test) - Reproducible benchmarking environment with Docker, boring-registry, and automated reporting

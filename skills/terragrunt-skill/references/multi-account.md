@@ -184,9 +184,9 @@ Deploy shared infrastructure first:
 4. Shared services (VPC, Transit Gateway)
 5. Workload accounts (non-prod, prod)
 
-Use `run-all` with dependency ordering:
+Use `run --all` with dependency ordering:
 
 ```bash
 cd infrastructure-live
-terragrunt run-all apply
+terragrunt run --all apply
 ```

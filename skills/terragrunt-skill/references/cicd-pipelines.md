@@ -9,7 +9,7 @@ This guide provides CI/CD pipeline templates for **Terragrunt Stacks** (explicit
 - OIDC-based authentication (no static credentials)
 - SSH-based Git access (recommended over HTTPS)
 - Provider caching for performance
-- Selective unit targeting with `--filter` ([docs](https://terragrunt.gruntwork.io/docs/features/filter/))
+- Selective unit targeting with `--filter` ([docs](https://docs.terragrunt.com/features/filter/))
 
 > **Why SSH over HTTPS?**
 > - **Enhanced security**: SSH keys provide stronger authentication than passwords or tokens
@@ -20,7 +20,7 @@ This guide provides CI/CD pipeline templates for **Terragrunt Stacks** (explicit
 
 ## Terragrunt Stack Commands
 
-When working with explicit stacks (`terragrunt.stack.hcl`), use `terragrunt stack run` instead of `terragrunt run-all`:
+When working with explicit stacks (`terragrunt.stack.hcl`), use `terragrunt stack run` instead of `terragrunt run --all`:
 
 ```bash
 # Navigate to stack directory
@@ -134,7 +134,8 @@ variables:
   cache: {}
   script:
     - cd $TG_STACK_PATH
-    - terragrunt hclfmt --terragrunt-check
+    - terragrunt hcl fmt --check
+    - terragrunt hcl validate
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH'
@@ -730,9 +731,9 @@ module "gcp_workload_identity" {
 ## References
 
 ### Terragrunt Stack Commands
-- [Terragrunt Stacks](https://terragrunt.gruntwork.io/docs/features/stacks/) - Official documentation for explicit stacks
-- [Terragrunt Run Command](https://terragrunt.gruntwork.io/docs/reference/cli/commands/run/) - CLI reference for run flags
-- [Run Queue](https://terragrunt.gruntwork.io/docs/features/run-queue/) - Queue flags and filtering
+- [Terragrunt Stacks](https://docs.terragrunt.com/features/stacks/) - Official documentation for explicit stacks
+- [Terragrunt Run Command](https://docs.terragrunt.com/reference/cli/commands/run/) - CLI reference for run flags
+- [Run Queue](https://docs.terragrunt.com/features/stacks/run-queue/) - Queue flags and filtering
 
 ### CI/CD Basics
 - [Terragrunt Performance Guide](performance.md)

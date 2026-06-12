@@ -91,5 +91,5 @@ When scaffolding, Terragrunt:
 
 ## References
 
-- [Terragrunt Catalog Documentation](https://terragrunt.gruntwork.io/docs/features/catalog/)
+- [Terragrunt Catalog Documentation](https://docs.terragrunt.com/features/catalog/)
 - [Boilerplate Documentation](https://github.com/gruntwork-io/boilerplate)
