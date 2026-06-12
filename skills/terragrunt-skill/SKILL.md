@@ -6,7 +6,7 @@ description: |
   - Creating or managing Terragrunt stacks (terragrunt.stack.hcl)
   - Creating units that wrap OpenTofu modules from separate repos
   - Configuring live infrastructure repositories with root.hcl hierarchy
-  - Setting up remote state backends (S3 with DynamoDB locking)
+  - Setting up remote state backends (S3 with native lockfile or DynamoDB locking)
   - Multi-account/multi-environment deployments with cross-account role assumption
 ---
 
@@ -94,7 +94,7 @@ terraform {
 
 1. Create environment directory structure
 2. Add `env.hcl` with `state_bucket_suffix`
-3. Run `./setup-state-backend.sh` to create state resources
+3. Run `terragrunt run --all -- backend bootstrap` to create state resources
 4. Add stack files referencing catalog
 
 ## Best Practices

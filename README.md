@@ -266,7 +266,6 @@ Terragrunt automatically provisions the S3 bucket (with versioning, encryption, 
 
 See [State Backend](https://terragrunt.gruntwork.io/docs/features/state-backend/) for details.
 
-> **Note:** The `skills/terragrunt-skill/scripts/setup-state-backend.sh` in this repo provides an alternative manual approach with more control over bucket configuration.
 
 ## Platform Engineering & Self-Service
 

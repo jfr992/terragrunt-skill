@@ -4,24 +4,21 @@
 
 ### S3 Backend (AWS)
 
-Recommended configuration in root.hcl:
+Recommended configuration in root.hcl (OpenTofu >= 1.10 — native S3 lockfile, no DynamoDB table needed):
 
 ```hcl
 remote_state {
   backend = "s3"
   config = {
-    encrypt        = true
-    bucket         = format("tfstate-%s%s-%s",
-                      local.account_name,
-                      try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "",
-                      local.aws_region)
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = local.aws_region
-    dynamodb_table = format("tfstate-locks-%s%s-%s",
-                      local.account_name,
-                      try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "",
-                      local.aws_region)
-    role_arn       = local.role_arn
+    encrypt      = true
+    bucket       = format("tfstate-%s%s-%s",
+                    local.account_name,
+                    try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "",
+                    local.aws_region)
+    key          = "${path_relative_to_include()}/terraform.tfstate"
+    region       = local.aws_region
+    use_lockfile = true
+    role_arn     = local.role_arn
   }
   generate = {
     path      = "backend.tf"
@@ -32,9 +29,19 @@ remote_state {
 
 Key settings:
 - **encrypt = true** - Enable server-side encryption
-- **dynamodb_table** - Enable state locking
+- **use_lockfile = true** - Native S3 state locking (OpenTofu >= 1.10). No DynamoDB table to provision or pay for.
 - **path_relative_to_include()** - Unique key per unit
 - **role_arn** - Cross-account access
+
+#### Legacy: DynamoDB locking
+
+For OpenTofu < 1.10, Terraform, or existing repos already using a lock table, replace `use_lockfile = true` with:
+
+```hcl
+    dynamodb_table = format("tfstate-locks-%s-%s", local.account_name, local.aws_region)
+```
+
+Terragrunt auto-creates the table on bootstrap. Migrating an existing repo to `use_lockfile` only requires the config change — locks are ephemeral, no state migration is needed. Both can be set simultaneously during a transition.
 
 ## State Isolation
 
@@ -74,82 +81,25 @@ This creates separate buckets per environment:
 - `tfstate-myproject-nonprod-staging-us-east-1`
 - `tfstate-myproject-nonprod-dev-us-east-1`
 
-## State Bucket Setup
+## State Backend Bootstrap
 
-### Prerequisites
-
-Before first Terragrunt run, create:
-1. S3 bucket with versioning and encryption
-2. DynamoDB table for locking
-3. IAM role with appropriate permissions
-
-### Setup Script
-
-> **Note:** This script currently only supports AWS (S3 + DynamoDB). GCP and Azure are not yet supported.
-
-The `setup-state-backend.sh` script auto-discovers accounts, regions, and environments from your directory structure and creates S3 buckets and DynamoDB lock tables.
-
-#### Required Directory Structure
-
-```
-infrastructure-live/
-├── setup-state-backend.sh        # Run from here
-├── root.hcl
-├── <account>/                    # Directory name (e.g., "non-prod", "prod")
-│   ├── account.hcl               # REQUIRED
-│   └── <region>/                 # AWS region (e.g., "us-east-1")
-│       ├── region.hcl
-│       ├── env.hcl               # Optional: region-level state bucket
-│       └── <environment>/        # Environment (e.g., "staging", "dev")
-│           ├── env.hcl           # Optional: env-level state bucket
-│           └── <service>/
-│               └── terragrunt.stack.hcl
-```
-
-#### Required HCL Variables
-
-**account.hcl** (required):
-```hcl
-locals {
-  account_name   = "myproject-nonprod"  # Used in bucket name
-  aws_account_id = "123456789012"       # For bucket policy
-}
-```
-
-**env.hcl** (optional - for environment isolation):
-```hcl
-locals {
-  environment         = "staging"
-  state_bucket_suffix = local.environment  # Creates separate bucket
-}
-```
-
-#### Usage
+Terragrunt natively provisions backend resources from the `remote_state` block — no external script needed:
 
 ```bash
-# Create all state backends (auto-discovers from directory structure)
-./setup-state-backend.sh
+# Create the S3 bucket (and DynamoDB table, if configured) for a unit
+terragrunt backend bootstrap
 
-# Dry run - show what would be created
-./setup-state-backend.sh --dry-run
+# Bootstrap everything discovered under the current directory
+terragrunt run --all -- backend bootstrap
 
-# Specific account only
-./setup-state-backend.sh --account prod
+# Migrate state between backends after editing remote_state config
+terragrunt backend migrate
+
+# Tear down backend resources (careful: state lives here)
+terragrunt backend delete
 ```
 
-#### What It Creates
-
-For each discovered account/region/environment:
-- **S3 Bucket** with versioning, KMS encryption, public access blocked, TLS-enforced policy
-- **DynamoDB Table** with `LockID` key for state locking
-
-The script:
-- Parses account.hcl and env.hcl files
-- Creates S3 buckets with versioning, encryption, and TLS enforcement
-- Creates DynamoDB tables for locking
-- Supports dry-run mode
-
-Reference: [setup-state-backend.sh](../scripts/setup-state-backend.sh)
+The bucket is created with versioning, server-side encryption, public access blocked, and a TLS-enforced policy. By default Terragrunt also auto-bootstraps on first `init`/`plan` when the backend doesn't exist; `backend bootstrap` makes it explicit, which is preferable in CI (least-privilege pipelines can run it once with elevated rights, then drop them).
 
 ## State Migration
 
