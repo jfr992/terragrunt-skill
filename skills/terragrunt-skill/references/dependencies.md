@@ -2,6 +2,17 @@
 
 Units within a stack can depend on each other, creating a DAG (Directed Acyclic Graph) of resources.
 
+## Contents
+- Dependency Patterns
+- How Dependencies Work
+- Conditional Dependencies
+- Smart Skip Outputs
+- Reference Resolution in Inputs
+- Provider Generation from Dependencies
+- Applying Single Units with Dependencies
+- Best Practices
+- References
+
 ## Dependency Patterns
 
 ### Fan-Out Pattern (EKS Example)

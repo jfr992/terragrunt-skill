@@ -242,18 +242,18 @@ See [CLAUDE.md](CLAUDE.md) for contributor guidelines and repository architectur
 
 ## State Backend Bootstrap
 
-Terragrunt can automatically create state backend resources (S3 bucket + DynamoDB table) when you run any command:
+Terragrunt can automatically create state backend resources (S3 bucket with native lockfile) when you run any command:
 
 ```hcl
 # root.hcl
 remote_state {
   backend = "s3"
   config = {
-    bucket         = "tfstate-${local.account_name}-${local.aws_region}"
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = local.aws_region
-    encrypt        = true
-    dynamodb_table = "tfstate-locks-${local.account_name}-${local.aws_region}"
+    bucket       = "tfstate-${local.account_name}-${local.aws_region}"
+    key          = "${path_relative_to_include()}/terraform.tfstate"
+    region       = local.aws_region
+    encrypt      = true
+    use_lockfile = true
   }
   generate = {
     path      = "backend.tf"
@@ -262,11 +262,10 @@ remote_state {
 }
 ```
 
-Terragrunt automatically provisions the S3 bucket (with versioning, encryption, access logging) and DynamoDB table (with encryption) if they don't exist.
+Terragrunt automatically provisions the S3 bucket (with versioning, encryption, access logging) if it doesn't exist. Native S3 lockfile (OpenTofu >= 1.10) replaces the need for a DynamoDB lock table.
 
 See [State Backend](https://terragrunt.gruntwork.io/docs/features/state-backend/) for details.
 
-> **Note:** The `skills/terragrunt-skill/scripts/setup-state-backend.sh` in this repo provides an alternative manual approach with more control over bucket configuration.
 
 ## Platform Engineering & Self-Service
 

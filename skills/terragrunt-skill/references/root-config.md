@@ -2,6 +2,13 @@
 
 The root.hcl file is the central configuration for your Terragrunt live repository.
 
+## Contents
+- Complete Example
+- Key Sections
+- Account Configuration (account.hcl)
+- Environment Configuration (env.hcl)
+- References
+
 ## Complete Example
 
 ```hcl
@@ -58,18 +65,15 @@ EOF
 remote_state {
   backend = "s3"
   config = {
-    encrypt        = true
-    bucket         = format("tfstate-%s%s-%s",
-                      local.account_name,
-                      try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "",
-                      local.aws_region)
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = local.aws_region
-    dynamodb_table = format("tfstate-locks-%s%s-%s",
-                      local.account_name,
-                      try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "",
-                      local.aws_region)
-    role_arn       = local.role_arn
+    encrypt      = true
+    bucket       = format("tfstate-%s%s-%s",
+                    local.account_name,
+                    try(local.env_vars.locals.state_bucket_suffix, "") != "" ? "-${local.env_vars.locals.state_bucket_suffix}" : "",
+                    local.aws_region)
+    key          = "${path_relative_to_include()}/terraform.tfstate"
+    region       = local.aws_region
+    use_lockfile = true
+    role_arn     = local.role_arn
   }
   generate = {
     path      = "backend.tf"
@@ -119,9 +123,9 @@ The provider block configures:
 remote_state {
   backend = "s3"
   config = {
-    bucket         = format("tfstate-%s%s-%s", ...)
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    dynamodb_table = format("tfstate-locks-%s%s-%s", ...)
+    bucket       = format("tfstate-%s%s-%s", ...)
+    key          = "${path_relative_to_include()}/terraform.tfstate"
+    use_lockfile = true
   }
 }
 ```
@@ -129,7 +133,7 @@ remote_state {
 Key features:
 - **Environment isolation**: `state_bucket_suffix` creates separate buckets
 - **Unique keys**: `path_relative_to_include()` ensures unique state per unit
-- **Locking**: DynamoDB table prevents concurrent modifications
+- **Locking**: Native S3 lockfile prevents concurrent modifications (OpenTofu >= 1.10)
 
 ### Catalog Configuration
 
