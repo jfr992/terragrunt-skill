@@ -51,7 +51,9 @@ Migrating classic → stacks: follow the official [Terralith to Terragrunt guide
 | State management | [state-management.md](references/state-management.md) |
 | Multi-account setup | [multi-account.md](references/multi-account.md) |
 | Performance optimization | [performance.md](references/performance.md) |
-| CI/CD pipelines | [cicd-pipelines.md](references/cicd-pipelines.md) |
+| CI/CD pipelines (shared + IAM/OIDC setup) | [cicd-pipelines.md](references/cicd-pipelines.md) |
+| GitLab CI pipelines | [cicd-gitlab.md](references/cicd-gitlab.md) |
+| GitHub Actions pipelines | [cicd-github.md](references/cicd-github.md) |
 
 ## Core Concepts
 

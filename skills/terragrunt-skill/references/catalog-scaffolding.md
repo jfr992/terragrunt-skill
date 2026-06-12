@@ -13,6 +13,8 @@ terragrunt catalog
 
 This displays all available units and stacks from the configured catalog.
 
+![Terragrunt catalog TUI](../assets/images/terragrunt-catalog.png)
+
 ## Catalog Configuration in root.hcl
 
 ```hcl
