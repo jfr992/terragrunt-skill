@@ -35,7 +35,7 @@ terragrunt run --all plan --experiment cas
 
 Biggest win on repos where many units share the same module sources. Experimental — verify behavior before enabling in CI.
 
-### Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
+## Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
 
 For environments not yet on OpenTofu >= 1.10, Terragrunt's built-in provider cache server provides effective optimization:
 
@@ -50,7 +50,7 @@ Benefits:
 
 **Note:** Can add overhead for single operations. Measure before/after for your use case.
 
-### Dependency Output Fetching (Experimental)
+## Dependency Output Fetching (Experimental)
 
 Bypass `tofu output -json` by reading S3 state directly:
 
