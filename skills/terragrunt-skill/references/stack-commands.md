@@ -1,5 +1,16 @@
 # Stack Commands
 
+## Contents
+- Basic Operations
+- Targeting Specific Units
+- Filter Expressions
+- Advanced Filtering
+- Parallelism Control
+- Visualize Dependencies
+- Useful Flags
+- The .terragrunt-stack Directory
+- References
+
 ## Basic Operations
 
 ```bash

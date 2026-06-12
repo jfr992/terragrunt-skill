@@ -1,5 +1,12 @@
 # GitLab CI Pipelines for Terragrunt
 
+## Contents
+- Base Templates (`.gitlab-ci.yml`)
+- AWS Authentication Pattern
+- GCP Authentication Pattern
+- Targeting Specific Units
+- References
+
 > **Best Practice: Reusable Templates**
 >
 > Structure GitLab CI with reusable templates (`.template-name`) that can be extended and overridden:

@@ -2,6 +2,13 @@
 
 The root.hcl file is the central configuration for your Terragrunt live repository.
 
+## Contents
+- Complete Example
+- Key Sections
+- Account Configuration (account.hcl)
+- Environment Configuration (env.hcl)
+- References
+
 ## Complete Example
 
 ```hcl
