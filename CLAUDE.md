@@ -22,7 +22,7 @@ This skill uses **progressive disclosure** to minimize token usage:
   - `performance.md`: Provider caching, benchmarking tools, and optimization
   - `root-config.md`: Root.hcl configuration and locals setup
   - `stack-commands.md`: Stack generation and execution commands
-  - `state-management.md`: S3/DynamoDB backend patterns and best practices
+  - `state-management.md`: State backend configuration: native S3 lockfile (OpenTofu >= 1.10) and legacy DynamoDB patterns
 - **.claude-plugin/**: Marketplace distribution configuration
 - **.github/workflows/**: CI/CD for validation and automated releases
 
