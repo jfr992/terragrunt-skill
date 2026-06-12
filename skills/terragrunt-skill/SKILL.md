@@ -8,6 +8,9 @@ description: |
   - Configuring live infrastructure repositories with root.hcl hierarchy
   - Setting up remote state backends (S3 with native lockfile or DynamoDB locking)
   - Multi-account/multi-environment deployments with cross-account role assumption
+  - Working with classic Gruntwork-style live repos (account/region/env hierarchy, _envcommon includes)
+  - Migrating a monolithic Terraform/OpenTofu repo (terralith) to Terragrunt
+  - Exploring or auditing an existing Terragrunt repository (find, list, dag graph)
 ---
 
 # Terragrunt Infrastructure Skill
@@ -20,6 +23,16 @@ This skill provides guidance for infrastructure using Terragrunt with OpenTofu, 
 2. **Infrastructure Live** - Environment-specific deployments consuming the catalog
 3. **Module Repos** - Separate repositories for each OpenTofu module (independent versioning)
 
+## Choosing an Architecture
+
+**Default recommendation: explicit stacks** — the catalog + `terragrunt.stack.hcl` + values pattern this skill teaches. Units are generated from stack files; configuration flows through `values`; no per-unit boilerplate.
+
+**Supported alternative: classic implicit stacks** — the original Gruntwork pattern: `account/region/env/component` directory hierarchy, per-level `.hcl` variable files, shared component config in `_envcommon/` via `include` + `expose`. Any directory of units is an implicit stack. Use it when the repo already follows it, when the footprint is too small to justify a catalog, or when the team isn't ready for stacks. See [classic-live-structure.md](references/classic-live-structure.md).
+
+**Orthogonal choice: module organization** — modules monorepo (`modules/` + `examples/`, one tag versions all, `//modules/x?ref=` sourcing) vs module-per-repo (independent versioning). Either works with either architecture. See [modules-monorepo.md](references/modules-monorepo.md).
+
+Migrating classic → stacks: follow the official [Terralith to Terragrunt guide](https://docs.terragrunt.com/guides/terralith-to-terragrunt/).
+
 ## Quick Navigation
 
 | Topic | Reference |
@@ -27,6 +40,9 @@ This skill provides guidance for infrastructure using Terragrunt with OpenTofu, 
 | Naming conventions | [naming.md](references/naming.md) |
 | Catalog structure | [catalog-structure.md](references/catalog-structure.md) |
 | Live repo structure | [live-structure.md](references/live-structure.md) |
+| Classic live structure (implicit stacks) | [classic-live-structure.md](references/classic-live-structure.md) |
+| Modules monorepo | [modules-monorepo.md](references/modules-monorepo.md) |
+| Discovery commands (find/list/dag) | [discovery-commands.md](references/discovery-commands.md) |
 | Root/account/env configs | [root-config.md](references/root-config.md) |
 | Unit dependencies | [dependencies.md](references/dependencies.md) |
 | Catalog scaffolding | [catalog-scaffolding.md](references/catalog-scaffolding.md) |
