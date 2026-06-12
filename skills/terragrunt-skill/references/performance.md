@@ -11,9 +11,33 @@ For a 10-person team running 35 Terragrunt operations daily, this translates to 
 
 ## Easy Wins
 
-### Provider Cache Server
+## Provider Caching (OpenTofu >= 1.10: automatic)
 
-The simplest optimization is using Terragrunt's built-in provider cache server:
+With OpenTofu >= 1.10, Terragrunt **automatically** sets `TF_PLUGIN_CACHE_DIR` per run — no flags needed. This is stable and on by default.
+
+```bash
+# Override the cache location if needed
+TG_PROVIDER_CACHE_DIR=/path/to/cache terragrunt run --all plan
+
+# Opt out
+terragrunt run --all apply --no-auto-provider-cache-dir
+```
+
+The provider cache **server** (`--provider-cache`, below) is now mainly useful for Terraform, OpenTofu < 1.10, or multi-runner CI fleets sharing one cache.
+
+## Content-Addressed Store (CAS) — experiment
+
+Deduplicates module/source downloads across units via a content-addressed store (supports git, http, s3, gcs, registry backends):
+
+```bash
+terragrunt run --all plan --experiment cas
+```
+
+Biggest win on repos where many units share the same module sources. Experimental — verify behavior before enabling in CI.
+
+### Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
+
+For environments not yet on OpenTofu >= 1.10, Terragrunt's built-in provider cache server provides effective optimization:
 
 ```bash
 terragrunt run --all plan --provider-cache
@@ -25,14 +49,6 @@ Benefits:
 - No additional infrastructure required
 
 **Note:** Can add overhead for single operations. Measure before/after for your use case.
-
-### Automatic Provider Caching (OpenTofu >= 1.10)
-
-With OpenTofu 1.10+ and latest Terragrunt, provider caching is automatic via `TF_PLUGIN_CACHE_DIR`. No manual configuration needed.
-
-> **Note:** OpenTofu's auto provider cache is generally more performant at lower scales compared to Terraform. For larger operations, the explicit `--provider-cache` flag with Terragrunt's cache server provides better results.
-
-**Limitation:** Filesystem lock contention can occur with many concurrent operations.
 
 ### Dependency Output Fetching (Experimental)
 

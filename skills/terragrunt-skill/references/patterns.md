@@ -422,3 +422,40 @@ inputs = {
 3. **Duplicate dependencies:** Each dependency block should appear only once
 4. **Missing mock outputs:** Always provide for plan/validate commands
 5. **Hardcoded local paths:** Use local paths only for testing, never in committed code
+
+## Error Handling: errors block
+
+Declarative retry/ignore rules per unit — replaces ad-hoc retryable-errors config:
+
+```hcl
+errors {
+  retry "transient_aws" {
+    retryable_errors   = ["(?s).*RequestError: send request failed.*", "(?s).*ThrottlingException.*"]
+    max_attempts       = 3
+    sleep_interval_sec = 5
+  }
+
+  ignore "known_safe" {
+    ignorable_errors = ["(?s).*deprecation warning.*"]
+    message          = "Ignoring known-safe warning"
+  }
+}
+```
+
+## Feature Flags
+
+Gate config behavior at runtime without editing files:
+
+```hcl
+feature "use_new_vpc_module" {
+  default = false
+}
+
+terraform {
+  source = feature.use_new_vpc_module.value ? local.new_source : local.old_source
+}
+```
+
+```bash
+terragrunt plan --feature use_new_vpc_module=true
+```

@@ -140,9 +140,30 @@ variables:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH'
 
-# -----------------------------------------------------------------------------
+---
+
+### Run Reports and Strict Mode in CI
+
+Emit a machine-readable run report for pipeline summaries:
+
+```bash
+terragrunt run --all plan --report-file report.json --report-schema-file schema.json
+```
+
+The report records per-unit result (succeeded/failed/excluded/early exit) and reason — feed it to your MR/PR summary step.
+
+Fail pipelines on deprecated usage before upgrades bite:
+
+```yaml
+variables:
+  TG_STRICT_MODE: "true"        # all deprecations become errors
+  # or selectively:
+  # TG_STRICT_CONTROL: "deprecated-flags,deprecated-env-vars"
+```
+
+---
+
 # STACK PLAN TEMPLATE
-# -----------------------------------------------------------------------------
 
 .terragrunt_stack_plan_template:
   stage: plan
