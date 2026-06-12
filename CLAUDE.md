@@ -88,8 +88,6 @@ terragrunt-skill/
 ├── .github/workflows/
 │   ├── validate.yml            # Skill validation (frontmatter, links)
 │   └── automated-release.yml   # Conventional commits → GitHub releases
-├── docs/
-│   └── superpowers/            # Superpowers skill integration (plans, specs)
 ├── skills/
 │   └── terragrunt-skill/
 │       ├── SKILL.md            # Main skill (loaded by Claude Code)
