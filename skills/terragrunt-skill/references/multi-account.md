@@ -22,7 +22,6 @@ Organization
 ```
 infrastructure-live/
 ├── root.hcl
-├── setup-state-backend.sh
 ├── shared-services/
 │   ├── account.hcl
 │   └── us-east-1/
