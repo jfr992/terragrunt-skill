@@ -1,3 +1,12 @@
+# [1.8.0](https://github.com/jfr992/terragrunt-skill/compare/v1.7.0...v1.8.0) (2026-07-07)
+
+
+### Features
+
+* add Terragrunt 1.1 features — CAS, autoinclude, catalog redesign ([#7](https://github.com/jfr992/terragrunt-skill/issues/7)) ([08f6d11](https://github.com/jfr992/terragrunt-skill/commit/08f6d117d990dd0ee56415710604d8c91d9c1e5a))
+
+
+
 # [1.7.0](https://github.com/jfr992/terragrunt-skill/compare/v1.6.0...v1.7.0) (2026-06-12)
 
 
@@ -48,15 +57,6 @@
 ### Features
 
 * refactor SKILL.md to navigation hub with progressive disclosure ([8ce8c02](https://github.com/jfr992/terragrunt-skill/commit/8ce8c02425f2cc3953167a326d0e0b36ed63a40e))
-
-
-
-# [1.3.0](https://github.com/jfr992/terragrunt-skill/compare/v1.2.0...v1.3.0) (2026-01-22)
-
-
-### Features
-
-* update CLAUDE.md with architecture options and validation workflow ([ade3bcb](https://github.com/jfr992/terragrunt-skill/commit/ade3bcba481c8f2850ce39ea5b465cd9e1c54210))
 
 
 
