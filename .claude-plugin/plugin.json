@@ -1,6 +1,6 @@
 {
   "name": "terragrunt-skill",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Terragrunt infrastructure-as-code patterns with OpenTofu/Terraform",
   "author": {
     "name": "Juan Reyes",
