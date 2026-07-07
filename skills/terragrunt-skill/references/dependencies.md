@@ -4,7 +4,9 @@ Units within a stack can depend on each other, creating a DAG (Directed Acyclic 
 
 ## Contents
 - Dependency Patterns
-- How Dependencies Work
+- Choosing a Wiring Pattern
+- How Dependencies Work (values pattern)
+- Autoinclude Dependencies (Terragrunt 1.1+)
 - Conditional Dependencies
 - Smart Skip Outputs
 - Reference Resolution in Inputs
@@ -40,7 +42,21 @@ cloudfront
 └── depends on s3 (for origin bucket)
 ```
 
-## How Dependencies Work
+## Choosing a Wiring Pattern
+
+Two supported ways to wire dependencies between units in a stack:
+
+| | Values pattern | Autoinclude (1.1+) |
+|---|---|---|
+| Where wiring lives | Catalog unit (`dependency` block reads `values.X_path`) | Stack file (`autoinclude` block inside `unit`) |
+| Catalog unit must know about the dependency | Yes | No |
+| Conditional/optional dependencies | Rich (`enabled`, `skip_outputs`, reference resolution) | Basic |
+| Path references | String values (`"../eks"`) | `unit.<name>.path` (resolved, not hardcoded) |
+| Works pre-1.1 | Yes | No |
+
+Use the values pattern when catalog units are designed around it (this skill's existing catalogs) or dependencies are conditional. Use autoinclude when composing units that shouldn't know about each other, or to avoid plumbing paths through `values`. Both can coexist in one stack.
+
+## How Dependencies Work (values pattern)
 
 ### 1. Stack passes dependency paths via values
 
@@ -92,6 +108,41 @@ inputs = {
   node_iam_role_arn = values(dependency.eks.outputs.eks_managed_node_groups)[0].iam_role_arn
 }
 ```
+
+## Autoinclude Dependencies (Terragrunt 1.1+)
+
+Declare the dependency in the stack file itself — the catalog unit stays dependency-agnostic:
+
+```hcl
+# terragrunt.stack.hcl
+unit "vpc" {
+  source = "${local.catalog_path}//units/vpc?ref=v1.0.0"
+  path   = "vpc"
+}
+
+unit "app" {
+  source = "${local.catalog_path}//units/app?ref=v1.0.0"
+  path   = "app"
+
+  autoinclude {
+    dependency "vpc" {
+      config_path = unit.vpc.path  # resolved sibling path, not hardcoded
+      mock_outputs = {
+        vpc_id = "vpc-mock"
+      }
+    }
+    inputs = {
+      vpc_id = dependency.vpc.outputs.vpc_id
+    }
+  }
+}
+```
+
+`terragrunt stack generate` writes a `terragrunt.autoinclude.hcl` next to the generated unit, which Terragrunt merges automatically during parsing — the unit's own `terragrunt.hcl` is untouched.
+
+`autoinclude` also supports depending on entire stacks: point `config_path` at a stack directory (via `stack.<name>.path`) to aggregate that stack's outputs.
+
+Pairs well with [CAS relative sources](cas.md) — `update_source_with_cas = true` plus autoinclude makes a generated stack fully self-contained.
 
 ## Conditional Dependencies
 

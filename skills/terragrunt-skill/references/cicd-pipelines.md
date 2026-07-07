@@ -18,6 +18,7 @@ This guide provides CI/CD pipeline templates for **Terragrunt Stacks** (explicit
 - SSH-based Git access (recommended over HTTPS)
 - Provider caching for performance
 - Selective unit targeting with `--filter` ([docs](https://docs.terragrunt.com/features/filter/))
+- Change-based planning: with [CAS](cas.md) `update_source_with_cas`, unchanged units hash identically across catalog versions — a version bump only diffs changed units, so `--filter-affected` (or `--filter 'reading=<path>'`) plans only what changed instead of the whole tree
 
 > **Why SSH over HTTPS?**
 > - **Enhanced security**: SSH keys provide stronger authentication than passwords or tokens

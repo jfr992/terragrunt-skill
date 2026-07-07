@@ -11,6 +11,8 @@ description: |
   - Working with classic Gruntwork-style live repos (account/region/env hierarchy, _envcommon includes)
   - Migrating a monolithic Terraform/OpenTofu repo (terralith) to Terragrunt
   - Exploring or auditing an existing Terragrunt repository (find, list, dag graph)
+  - Wiring unit dependencies (values pattern or autoinclude blocks)
+  - Speeding up clones/fetches or making catalog stacks self-contained with the Content Addressable Store (CAS, update_source_with_cas)
 ---
 
 # Terragrunt Infrastructure Skill
@@ -51,6 +53,7 @@ Migrating classic → stacks: follow the official [Terralith to Terragrunt guide
 | State management | [state-management.md](references/state-management.md) |
 | Multi-account setup | [multi-account.md](references/multi-account.md) |
 | Performance optimization | [performance.md](references/performance.md) |
+| Content Addressable Store (CAS) | [cas.md](references/cas.md) |
 | CI/CD pipelines (shared + IAM/OIDC setup) | [cicd-pipelines.md](references/cicd-pipelines.md) |
 | GitLab CI pipelines | [cicd-gitlab.md](references/cicd-gitlab.md) |
 | GitHub Actions pipelines | [cicd-github.md](references/cicd-github.md) |
@@ -81,6 +84,8 @@ inputs = {
 }
 ```
 
+Terragrunt 1.1+ adds `autoinclude` blocks as an alternative — dependencies declared in the stack file, catalog units stay dependency-agnostic. See [dependencies.md](references/dependencies.md) for choosing between them.
+
 ### Module Sourcing
 
 Units reference modules via Git URL with version from values:
@@ -90,6 +95,8 @@ terraform {
   source = "git::git@github.com:YOUR_ORG/modules/rds.git//app?ref=${values.version}"
 }
 ```
+
+For catalog-internal references (units/stacks/modules in the same repo), Terragrunt 1.1+ allows plain relative paths with `update_source_with_cas = true` — `stack generate` rewrites them to content-addressed references, so no URL pinning or version plumbing is needed. See [cas.md](references/cas.md).
 
 ## Common Operations
 

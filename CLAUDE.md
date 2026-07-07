@@ -8,13 +8,14 @@ This skill uses **progressive disclosure** to minimize token usage:
 
 - **SKILL.md** (~140 lines): Core patterns for Terragrunt stacks, units, and catalog structure
 - **references/**: Extended documentation loaded on demand
+  - `cas.md`: Content Addressable Store — default dedup, update_source_with_cas for self-contained catalog stacks
   - `catalog-scaffolding.md`: Interactive catalog browsing and unit scaffolding
   - `catalog-structure.md`: Directory layout and organization of reusable units and stacks
   - `cicd-github.md`: GitHub Actions pipelines (quick reference and OIDC patterns)
   - `cicd-gitlab.md`: GitLab CI pipelines (templates, AWS/GCP OIDC auth, unit targeting)
   - `cicd-pipelines.md`: Shared CI/CD concepts, run reports, IAM/OIDC cloud setup
   - `classic-live-structure.md`: Traditional account/region/environment hierarchy pattern
-  - `dependencies.md`: Unit interdependency patterns and DAG management
+  - `dependencies.md`: Unit interdependency patterns (values pattern + autoinclude) and DAG management
   - `discovery-commands.md`: terragrunt find and exploration commands
   - `live-structure.md`: Explicit stacks directory layout and organization
   - `modules-monorepo.md`: Monorepo vs per-repo module versioning strategies
@@ -49,10 +50,13 @@ This skill uses **progressive disclosure** to minimize token usage:
 
 ## Key Patterns
 
-**Watch:** `terragrunt.autoinclude.hcl` exists in upstream code but is not yet documented — do not teach it until docs.terragrunt.com covers it.
+**Watch (active experiments — do not teach until GA):** `deep_merge()` HCL function (deep-merge), `TG_CTX_*` hook env vars (hook-context-env), `--no-hooks` (optional-hooks), Azure backend improvements (azure-backend).
 
 ### Values Pattern
 Units receive ALL configuration through the `values` object, enabling stacks to configure units without modifying unit code.
+
+### Autoinclude (Terragrunt 1.1+)
+Dependencies declared in `autoinclude` blocks inside stack `unit` blocks; generates `terragrunt.autoinclude.hcl`. Documented in `dependencies.md` as a coexisting option with the values pattern — neither is anointed default.
 
 ### Reference Resolution
 Units resolve symbolic references like `"../acm"` to actual dependency outputs, allowing stacks to wire dependencies declaratively.
