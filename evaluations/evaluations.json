@@ -6,7 +6,9 @@
     {"query": "Migrate our monolithic Terraform repo to Terragrunt", "expected_behavior": ["Loads skill", "References the terralith-to-terragrunt migration guidance"]},
     {"query": "Configure S3 remote state with locking for OpenTofu 1.10", "expected_behavior": ["Loads skill", "Recommends use_lockfile = true, not DynamoDB", "Mentions terragrunt backend bootstrap"]},
     {"query": "What units exist in this Terragrunt repo and what depends on what?", "expected_behavior": ["Loads skill", "Uses terragrunt find --json --dependencies or terragrunt list --tree"]},
-    {"query": "Add a GitLab CI pipeline that plans and applies our Terragrunt stacks with OIDC to AWS", "expected_behavior": ["Loads skill", "Reads cicd-pipelines.md and cicd-gitlab.md", "Uses stack run / run --all with OIDC templates"]}
+    {"query": "Add a GitLab CI pipeline that plans and applies our Terragrunt stacks with OIDC to AWS", "expected_behavior": ["Loads skill", "Reads cicd-pipelines.md and cicd-gitlab.md", "Uses stack run / run --all with OIDC templates"]},
+    {"query": "Every catalog version bump makes CI plan all our units — how do we get Terragrunt to only plan what actually changed?", "expected_behavior": ["Loads skill", "Reads cas.md", "Recommends update_source_with_cas with relative catalog sources", "Mentions --filter-affected or reading= change-based filtering"]},
+    {"query": "Wire the app unit to the vpc unit in our terragrunt.stack.hcl without touching the catalog units", "expected_behavior": ["Loads skill", "Reads dependencies.md", "Presents autoinclude (1.1+) vs values pattern with trade-offs", "Uses unit.vpc.path in autoinclude example"]}
   ],
   "should_not_trigger": [
     {"query": "Write a Terraform module for an S3 bucket with versioning", "reason": "Pure module authoring, no Terragrunt orchestration — terraform-skill territory"},

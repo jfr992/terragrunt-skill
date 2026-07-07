@@ -4,7 +4,7 @@
 - Overview
 - Easy Wins
 - Provider Caching (OpenTofu >= 1.10: automatic)
-- Content-Addressed Store (CAS) — experiment
+- Content Addressable Store (CAS) — on by default (1.1+)
 - Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
 - Dependency Output Fetching (Experimental)
 - Advanced: Two-Layer Provider Caching
@@ -39,15 +39,11 @@ terragrunt run --all apply --no-auto-provider-cache-dir
 
 The provider cache **server** (`--provider-cache`, below) is now mainly useful for Terraform, OpenTofu < 1.10, or multi-runner CI fleets sharing one cache.
 
-## Content-Addressed Store (CAS) — experiment
+## Content Addressable Store (CAS) — on by default (1.1+)
 
-Deduplicates module/source downloads across units via a content-addressed store (supports git, http, s3, gcs, registry backends):
+GA since Terragrunt 1.1 and enabled by default — no flags needed. Deduplicates source downloads (Git, HTTP, S3, GCS, Mercurial, SMB, registry) by content hash: faster clones, less disk, biggest win on repos where many units share module sources. Opt out with `--no-cas`.
 
-```bash
-terragrunt run --all plan --experiment cas
-```
-
-Biggest win on repos where many units share the same module sources. Experimental — verify behavior before enabling in CI.
+See [cas.md](cas.md) for how it works, `update_source_with_cas` for self-contained catalog stacks, and pitfalls.
 
 ## Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
 

@@ -103,6 +103,28 @@ locals {
 }
 ```
 
+### include in stack files (Terragrunt 1.1+)
+
+`terragrunt.stack.hcl` files accept `include` blocks, so stacks can read the same hierarchy config as units instead of re-declaring locals:
+
+```hcl
+# non-prod/us-east-1/staging/my-service/terragrunt.stack.hcl
+include "env" {
+  path   = find_in_parent_folders("env.hcl")
+  expose = true
+}
+
+unit "rds" {
+  source = "${local.catalog_path}//units/rds?ref=v1.0.0"
+  path   = "rds"
+  values = {
+    environment = include.env.locals.environment
+  }
+}
+```
+
+Multiple `include` blocks allowed (unique labels); `expose = true` makes the included config available as `include.<label>`.
+
 ## State Isolation
 
 Each unit gets its own state file through `path_relative_to_include()`:
