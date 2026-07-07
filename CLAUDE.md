@@ -50,6 +50,8 @@ This skill uses **progressive disclosure** to minimize token usage:
 
 ## Key Patterns
 
+**Watch (active experiments — do not teach until GA):** `deep_merge()` HCL function (deep-merge), `TG_CTX_*` hook env vars (hook-context-env), `--no-hooks` (optional-hooks), Azure backend improvements (azure-backend).
+
 ### Values Pattern
 Units receive ALL configuration through the `values` object, enabling stacks to configure units without modifying unit code.
 

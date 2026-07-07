@@ -23,6 +23,7 @@ Since 1.1, `terragrunt catalog` discovers components in the background without u
 - **`.terragrunt-catalog-ignore`** — commit to a catalog repo to control what gets indexed (gitignore-style rules)
 - **`--ignore-file <path>`** (or `TG_IGNORE_FILE`) — layer extra ignore rules on top of the repo's file; last match wins, so it can add exclusions or re-include excluded paths
 - **`--no-discovery-auth-provider-cmd`** — skip auth provider invocations during discovery; noticeably faster on large repos
+- **Scaffold form** — press `s` on a selected component to open an interactive form with field validation for boilerplate variables
 - **CAS-backed cloning** — catalog repos clone through the [CAS](cas.md) by default; repeat browses are near-instant
 
 ## Catalog Configuration in root.hcl
