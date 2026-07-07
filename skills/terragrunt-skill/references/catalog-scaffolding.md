@@ -15,6 +15,16 @@ This displays all available units and stacks from the configured catalog.
 
 ![Terragrunt catalog TUI](../assets/images/terragrunt-catalog.png)
 
+## Redesigned Catalog (Terragrunt 1.1+)
+
+Since 1.1, `terragrunt catalog` discovers components in the background without upfront configuration:
+
+- **Discovery beyond `modules/`** — units, stacks, and modules are found anywhere in catalog repos; components get type labels and README-derived tags
+- **`.terragrunt-catalog-ignore`** — commit to a catalog repo to control what gets indexed (gitignore-style rules)
+- **`--ignore-file <path>`** (or `TG_IGNORE_FILE`) — layer extra ignore rules on top of the repo's file; last match wins, so it can add exclusions or re-include excluded paths
+- **`--no-discovery-auth-provider-cmd`** — skip auth provider invocations during discovery; noticeably faster on large repos
+- **CAS-backed cloning** — catalog repos clone through the [CAS](cas.md) by default; repeat browses are near-instant
+
 ## Catalog Configuration in root.hcl
 
 ```hcl
