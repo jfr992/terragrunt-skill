@@ -5,14 +5,16 @@ Units within a stack can depend on each other, creating a DAG (Directed Acyclic 
 ## Contents
 - Dependency Patterns
 - Choosing a Wiring Pattern
-- How Dependencies Work (values pattern)
-- Autoinclude Dependencies (Terragrunt 1.1+)
+- Autoinclude Dependencies (recommended, Terragrunt 1.1+)
+- Dependencies on a Whole Stack
+- Values Pattern / Reference Resolution (legacy, portable to pre-1.1)
 - Conditional Dependencies
 - Smart Skip Outputs
 - Reference Resolution in Inputs
 - Provider Generation from Dependencies
 - Applying Single Units with Dependencies
 - Best Practices
+- Gotchas
 - References
 
 ## Dependency Patterns
@@ -46,17 +48,70 @@ cloudfront
 
 Two supported ways to wire dependencies between units in a stack:
 
-| | Values pattern | Autoinclude (1.1+) |
+| | Autoinclude (1.1+, recommended) | Values pattern (legacy) |
 |---|---|---|
-| Where wiring lives | Catalog unit (`dependency` block reads `values.X_path`) | Stack file (`autoinclude` block inside `unit`) |
-| Catalog unit must know about the dependency | Yes | No |
-| Conditional/optional dependencies | Rich (`enabled`, `skip_outputs`, reference resolution) | Basic |
-| Path references | String values (`"../eks"`) | `unit.<name>.path` (resolved, not hardcoded) |
-| Works pre-1.1 | Yes | No |
+| Where wiring lives | Stack file (`autoinclude` block inside `unit`) | Catalog unit (`dependency` block reads `values.X_path`) |
+| Catalog unit must know about the dependency | No | Yes |
+| Conditional/optional dependencies | Basic | Rich (`enabled`, `skip_outputs`, reference resolution) |
+| Path references | `unit.<name>.path` (resolved, not hardcoded) | String values (`"../eks"`) |
+| Works pre-1.1 | No | Yes |
 
-Use the values pattern when catalog units are designed around it (this skill's existing catalogs) or dependencies are conditional. Use autoinclude when composing units that shouldn't know about each other, or to avoid plumbing paths through `values`. Both can coexist in one stack.
+Default to autoinclude for new stacks: catalog units stay dependency-agnostic and paths are resolved, not plumbed through `values`. Keep the values pattern for existing catalogs designed around it, pre-1.1 compatibility, or rich conditional dependencies. Both can coexist in one stack.
 
-## How Dependencies Work (values pattern)
+## Autoinclude Dependencies (recommended, Terragrunt 1.1+)
+
+Declare the dependency in the stack file itself — the catalog unit stays dependency-agnostic:
+
+```hcl
+# terragrunt.stack.hcl
+unit "vpc" {
+  source = "${local.catalog_path}//units/vpc?ref=v1.0.0"
+  path   = "vpc"
+}
+
+unit "app" {
+  source = "${local.catalog_path}//units/app?ref=v1.0.0"
+  path   = "app"
+
+  autoinclude {
+    dependency "vpc" {
+      config_path = unit.vpc.path  # resolved sibling path, not hardcoded
+      mock_outputs = {
+        vpc_id = "vpc-mock"
+      }
+    }
+    inputs = {
+      vpc_id = dependency.vpc.outputs.vpc_id
+    }
+  }
+}
+```
+
+`terragrunt stack generate` writes a `terragrunt.autoinclude.hcl` next to the generated unit, which Terragrunt merges automatically during parsing — the unit's own `terragrunt.hcl` is untouched.
+
+`autoinclude` also supports depending on entire stacks: point `config_path` at a stack directory (via `stack.<name>.path`) to aggregate that stack's outputs.
+
+Pairs well with [CAS relative sources](cas.md) — `update_source_with_cas = true` plus autoinclude makes a generated stack fully self-contained.
+
+## Dependencies on a Whole Stack
+
+A unit can depend on an entire stack instead of a single unit:
+
+```hcl
+# inside a unit's autoinclude block in terragrunt.stack.hcl
+dependency "infra" {
+  config_path = stack.infra.path
+}
+inputs = {
+  vpc_id = dependency.infra.outputs.vpc.vpc_id   # dependency.<stack>.outputs.<unit>.<output>
+}
+```
+
+The run queue waits for **all** units of that stack before running the dependent unit. Terragrunt 1.2 fix: a stack containing expanded units (see [expansion.md](expansion.md)) is now waited on — previously those units were silently dropped from the wait.
+
+Ref: https://docs.terragrunt.com/reference/experiments/completed/#stack-dependencies
+
+## Values Pattern / Reference Resolution (legacy, portable to pre-1.1)
 
 ### 1. Stack passes dependency paths via values
 
@@ -108,41 +163,6 @@ inputs = {
   node_iam_role_arn = values(dependency.eks.outputs.eks_managed_node_groups)[0].iam_role_arn
 }
 ```
-
-## Autoinclude Dependencies (Terragrunt 1.1+)
-
-Declare the dependency in the stack file itself — the catalog unit stays dependency-agnostic:
-
-```hcl
-# terragrunt.stack.hcl
-unit "vpc" {
-  source = "${local.catalog_path}//units/vpc?ref=v1.0.0"
-  path   = "vpc"
-}
-
-unit "app" {
-  source = "${local.catalog_path}//units/app?ref=v1.0.0"
-  path   = "app"
-
-  autoinclude {
-    dependency "vpc" {
-      config_path = unit.vpc.path  # resolved sibling path, not hardcoded
-      mock_outputs = {
-        vpc_id = "vpc-mock"
-      }
-    }
-    inputs = {
-      vpc_id = dependency.vpc.outputs.vpc_id
-    }
-  }
-}
-```
-
-`terragrunt stack generate` writes a `terragrunt.autoinclude.hcl` next to the generated unit, which Terragrunt merges automatically during parsing — the unit's own `terragrunt.hcl` is untouched.
-
-`autoinclude` also supports depending on entire stacks: point `config_path` at a stack directory (via `stack.<name>.path`) to aggregate that stack's outputs.
-
-Pairs well with [CAS relative sources](cas.md) — `update_source_with_cas = true` plus autoinclude makes a generated stack fully self-contained.
 
 ## Conditional Dependencies
 
@@ -270,6 +290,13 @@ terragrunt stack run apply --filter '.terragrunt-stack/karpenter...'
 3. **Use `skip_outputs` for conditional fetching** - Based on actual usage in inputs
 4. **Allow path overrides** - `try(values.X_path, "../default")` for flexibility
 5. **Document required outputs** - In mock_outputs, show what the dependency must provide
+
+## Gotchas
+
+- `unit.<name>.path` / `stack.<name>.path` resolve only inside the **same** `terragrunt.stack.hcl`. Passing them via `values` yields **absolute** paths in the generated `terragrunt.values.hcl` (field-tested, UNVERIFIED in docs) — don't commit or diff generated values expecting relative paths.
+- `locals` cannot reference `dependency.*` — locals are evaluated before dependencies (see [configuration parsing order](https://docs.terragrunt.com/reference/hcl#configuration-parsing-order)). Compute dependency-derived values in `inputs`.
+- Two `dependency` blocks with the same label or the same `config_path` produce a warning; enable `--strict-control duplicate-dependency-labels` in CI to make it an error.
+- Use `--no-dependency-outputs` for `init`/`validate` before dependencies have been applied.
 
 ## References
 

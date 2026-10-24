@@ -6,7 +6,7 @@
 - Provider Caching (OpenTofu >= 1.10: automatic)
 - Content Addressable Store (CAS) — on by default (1.1+)
 - Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
-- Dependency Output Fetching (Experimental)
+- Dependency Outputs from State (default since 1.2)
 - Advanced: Two-Layer Provider Caching
 - Explicit vs Implicit Stacks
 - Measuring Performance
@@ -31,10 +31,10 @@ With OpenTofu >= 1.10, Terragrunt **automatically** sets `TF_PLUGIN_CACHE_DIR` p
 
 ```bash
 # Override the cache location if needed
-TG_PROVIDER_CACHE_DIR=/path/to/cache terragrunt run --all plan
+TG_PROVIDER_CACHE_DIR=/path/to/cache terragrunt run --all -- plan
 
 # Opt out
-terragrunt run --all apply --no-auto-provider-cache-dir
+terragrunt run --all --no-auto-provider-cache-dir -- apply
 ```
 
 The provider cache **server** (`--provider-cache`, below) is now mainly useful for Terraform, OpenTofu < 1.10, or multi-runner CI fleets sharing one cache.
@@ -50,7 +50,7 @@ See [cas.md](cas.md) for how it works, `update_source_with_cas` for self-contain
 For environments not yet on OpenTofu >= 1.10, Terragrunt's built-in provider cache server provides effective optimization:
 
 ```bash
-terragrunt run --all plan --provider-cache
+terragrunt run --all --provider-cache -- plan
 ```
 
 Benefits:
@@ -60,18 +60,17 @@ Benefits:
 
 **Note:** Can add overhead for single operations. Measure before/after for your use case.
 
-## Dependency Output Fetching (Experimental)
+## Dependency Outputs from State (default since 1.2)
 
-Bypass `tofu output -json` by reading S3 state directly:
+Terragrunt reads dependency outputs directly from remote state instead of running `tofu output` (no dependency init).
+- Direct reads: **S3, GCS, Azure Storage (azurerm)**. Other backends fall back to `tofu/terraform output`.
+- OpenTofu client-side state encryption: direct read can't decrypt → automatic fallback to `tofu output`, which needs a binary/config able to decrypt the state (speedup lost).
+- Missing state object (dependency not applied yet) → the unit's `mock_outputs` are used only when mocks are allowed for the command; otherwise the dependency fails with an error naming the unit.
+- Opt out: `terragrunt run --all --no-dependency-fetch-output-from-state -- plan` (env `TG_NO_DEPENDENCY_FETCH_OUTPUT_FROM_STATE`).
+- Skip outputs entirely for init/validate: `--no-dependency-outputs`.
+- Field report (anecdotal, one repo): warm `run --all -- plan` ~36s → ~23s.
 
-```bash
-terragrunt run --all plan --experiment=dependency-fetch-output-from-state
-```
-
-Constraints:
-- Only works with S3 backends
-- State file schema compatibility not guaranteed across versions
-- Experimental feature
+Ref: https://docs.terragrunt.com/reference/experiments/completed/#dependency-fetch-output-from-state
 
 ## Advanced: Two-Layer Provider Caching
 
@@ -112,10 +111,10 @@ export TG_DOWNLOAD_DIR=/path/to/cached/modules
 export TF_CLI_CONFIG_FILE=/root/.tofurc
 
 # Run with all optimizations
-terragrunt run --all plan \
+terragrunt run --all \
   --provider-cache \
   --parallelism 8 \
-  -- --parallelism=20 -no-color
+  -- plan --parallelism=20 -no-color
 ```
 
 ## Explicit vs Implicit Stacks
@@ -146,23 +145,23 @@ This skill uses explicit stacks by default.
 ```bash
 # Compare configurations
 hyperfine -w 3 -r 5 \
-  'terragrunt run --all plan' \
-  'terragrunt run --all plan --provider-cache'
+  'terragrunt run --all -- plan' \
+  'terragrunt run --all --provider-cache -- plan'
 
-# Compare with experimental features
+# Compare state-read outputs (default) vs legacy `output` fetching
 hyperfine -w 3 -r 5 \
-  'terragrunt run --all plan' \
-  'terragrunt run --all plan --experiment=dependency-fetch-output-from-state'
+  'terragrunt run --all --no-dependency-fetch-output-from-state -- plan' \
+  'terragrunt run --all -- plan'
 ```
 
 ### Cold vs Warm Cache Testing
 
 ```bash
 # Clear caches for cold-start testing
-rm -rf $TG_PROVIDER_CACHE_DIR/* $TG_DOWNLOAD_DIR/*
+: "${TG_PROVIDER_CACHE_DIR:?}" "${TG_DOWNLOAD_DIR:?}"; rm -rf -- "${TG_PROVIDER_CACHE_DIR:?}"/* "${TG_DOWNLOAD_DIR:?}"/*
 
 # Run and measure
-time terragrunt run --all plan --provider-cache
+time terragrunt run --all --provider-cache -- plan
 ```
 
 ### Reproducible Benchmarking Environment
@@ -211,7 +210,7 @@ jobs:
             terragrunt-cache-
 
       - name: Plan
-        run: terragrunt run --all plan --provider-cache
+        run: terragrunt run --all --provider-cache -- plan
 ```
 
 ### GitLab CI Example
@@ -231,7 +230,7 @@ jobs:
 plan:
   extends: .terragrunt-cache
   script:
-    - terragrunt run --all plan --provider-cache
+    - terragrunt run --all --provider-cache -- plan
 ```
 
 ## Parallelism Tuning
@@ -239,9 +238,9 @@ plan:
 Two levels of parallelism can be configured:
 
 ```bash
-terragrunt run --all plan \
+terragrunt run --all \
   --parallelism 8 \           # Terragrunt: max concurrent units
-  -- --parallelism=20         # OpenTofu: max concurrent operations per unit
+  -- plan --parallelism=20    # OpenTofu: max concurrent operations per unit
 ```
 
 Recommendations:

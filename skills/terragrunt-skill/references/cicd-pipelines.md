@@ -36,20 +36,20 @@ When working with explicit stacks (`terragrunt.stack.hcl`), use `terragrunt stac
 cd prod/us-east-1/my-service/
 
 # Plan entire stack
-terragrunt stack run plan
+terragrunt stack run -- plan
 
 # Apply entire stack
-terragrunt stack run apply
+terragrunt stack run -- apply
 
 # Target specific units within the stack (using --filter)
-terragrunt stack run plan --filter '.terragrunt-stack/dynamodb'
-terragrunt stack run apply --filter '.terragrunt-stack/lambda'
+terragrunt stack run --filter './.terragrunt-stack/dynamodb' -- plan
+terragrunt stack run --filter './.terragrunt-stack/lambda' -- apply
 
 # Target unit and its dependencies
-terragrunt stack run apply --filter '.terragrunt-stack/lambda...'
+terragrunt stack run --filter './.terragrunt-stack/lambda...' -- apply
 
 # Destroy stack
-terragrunt stack run destroy
+terragrunt stack run -- destroy
 ```
 
 ### Useful Flags
@@ -72,7 +72,7 @@ terragrunt stack run destroy
 Emit a machine-readable run report for pipeline summaries:
 
 ```bash
-terragrunt run --all plan --report-file report.json --report-schema-file schema.json
+terragrunt run --all --report-file report.json --report-schema-file schema.json -- plan
 ```
 
 The report records per-unit result (succeeded/failed/excluded/early exit) and reason — feed it to your MR/PR summary step.

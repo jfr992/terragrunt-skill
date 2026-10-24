@@ -62,7 +62,7 @@ Units track reads on local module files (`*.tf`, `*.hcl`, ...), so filters can s
 terragrunt find --filter 'reading=modules/vpc/main.tf'
 
 # Plan only units affected by a changed local module
-terragrunt run --all plan --filter 'reading=modules/vpc/main.tf'
+terragrunt run --all --filter 'reading=modules/vpc/main.tf' -- plan
 ```
 
 Units that read files outside their directory (templates, shared data) can declare it so change detection sees them:
@@ -82,6 +82,16 @@ Render the dependency graph (DOT format — pipe to graphviz):
 ```bash
 terragrunt dag graph | dot -Tpng > dag.png
 ```
+
+## terragrunt catalog (machine-readable)
+
+`catalog` lists reusable modules/units/stacks from configured catalog sources. In non-TTY contexts (agents, CI) the default format is `jsonl`; `--format=md` gives a Markdown listing:
+
+```bash
+terragrunt catalog --format=jsonl | jq -c '{kind,title,component_source}'
+```
+
+Ref: https://docs.terragrunt.com/reference/experiments/completed/
 
 ## Typical exploration sequence
 
