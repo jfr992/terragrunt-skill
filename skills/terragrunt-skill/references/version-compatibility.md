@@ -75,7 +75,8 @@ If `tofu` and `terraform` are both present, Terragrunt prefers `tofu` unless `--
 | `--terragrunt-tfpath` | `--tf-path` | 0.85.0 |
 | `--terragrunt-working-dir` | `--working-dir` | 0.85.0 |
 | `--terragrunt-include-dir` / `--terragrunt-exclude-dir` | `--queue-include-dir` / `--queue-exclude-dir` (later `--filter`) | 0.85.0 |
-| `TERRAGRUNT_*` env vars | `TG_*` env vars | not removed (still accepted in 1.2.1) |
+| `TERRAGRUNT_*` env vars | `TG_*` env vars | not removed (still accepted in 1.2.1). 0.68 ignores `TG_*`. Not a 1:1 rename: `TERRAGRUNT_DOWNLOAD` → `TG_DOWNLOAD_DIR` |
+| auto provider cache dir (OpenTofu >= 1.10) | — | experiment 0.86, default **0.89** |
 
 Tested on Floci with a two-unit classic layout: TG 0.68.0 `run-all plan --terragrunt-non-interactive --terragrunt-tfpath …` works. 0.78.1 accepts both forms and prints deprecation warnings for the old ones. 1.0.0 rejects `--terragrunt-non-interactive` and `run-all`. 1.2.1 prints `unknown command: "run-all"`.
 
