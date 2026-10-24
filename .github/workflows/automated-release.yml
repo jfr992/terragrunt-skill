@@ -75,12 +75,25 @@ jobs:
               json.dump(plugin_data, f, indent=2)
               f.write("\n")
           print(f"plugin.json updated to {version}")
+
+          # Update metadata.version in SKILL.md frontmatter
+          import re
+          skill = "skills/terragrunt-skill/SKILL.md"
+          with open(skill) as f:
+              text = f.read()
+          text, n = re.subn(r'(?m)^(  version: )"[^"]*"', rf'\g<1>"{version}"', text, count=1)
+          if n != 1:
+              print("Error: metadata.version not found in SKILL.md")
+              exit(1)
+          with open(skill, "w") as f:
+              f.write(text)
+          print(f"SKILL.md metadata.version updated to {version}")
           EOF
 
           # Commit version sync if changes were made
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/marketplace.json .claude-plugin/plugin.json
+          git add .claude-plugin/marketplace.json .claude-plugin/plugin.json skills/terragrunt-skill/SKILL.md
           git diff --staged --quiet || git commit -m "chore: sync plugin version to $VERSION"
           git push
 
