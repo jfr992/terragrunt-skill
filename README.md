@@ -1,6 +1,6 @@
-# Terragrunt Skill for Claude Code
+# Terragrunt Agent Skill
 
-A Claude Code skill providing best practices guidance for Terragrunt infrastructure-as-code with OpenTofu/Terraform.
+An agent skill providing best practices guidance for Terragrunt infrastructure-as-code with OpenTofu/Terraform. It follows the open Agent Skills spec (https://agentskills.io/specification), so it works with any compatible agent (Claude Code, Codex, Cursor, Gemini CLI, …).
 
 ## Architecture
 
@@ -91,21 +91,29 @@ A Claude Code skill providing best practices guidance for Terragrunt infrastruct
 
 ## Installation
 
-This skill is distributed via Claude Code marketplace using `.claude-plugin/marketplace.json`.
-
-### Claude Code (Recommended)
+The skill lives in `skills/terragrunt-skill/` (a standard Agent Skills directory: `SKILL.md` + `references/` + `assets/`).
 
 ```bash
+git clone https://github.com/jfr992/terragrunt-skill.git ~/src/terragrunt-skill
+# Codex, Cursor, Gemini CLI (shared user dir)
+mkdir -p ~/.agents/skills && ln -s ~/src/terragrunt-skill/skills/terragrunt-skill ~/.agents/skills/terragrunt-skill
+# Claude Code (marketplace)
 /plugin marketplace add jfr992/terragrunt-skill
 /plugin install terragrunt-skill@jfr992
+# or Claude Code manual
+mkdir -p ~/.claude/skills && ln -s ~/src/terragrunt-skill/skills/terragrunt-skill ~/.claude/skills/terragrunt-skill
+# Per-repo (team): commit or symlink into <repo>/.agents/skills/terragrunt-skill
 ```
 
-### Manual Installation
+| Agent | Skill directories read |
+|-------|------------------------|
+| Codex | `.agents/skills`, `~/.agents/skills` |
+| Cursor | `.agents/skills`, `~/.agents/skills`, also `.cursor/skills`, `.claude/skills` |
+| Gemini CLI | `.agents/skills`, `~/.agents/skills`, also `.gemini/skills` |
+| Claude Code | `.claude/skills`, `~/.claude/skills` only (or the plugin marketplace via `.claude-plugin/marketplace.json`) |
+| GitHub Copilot, Goose, Amp | `.agents/skills` — reported, unverified |
 
-```bash
-# Clone to Claude skills directory
-git clone https://github.com/jfr992/terragrunt-skill.git ~/.claude/skills/terragrunt-skill
-```
+**Windows:** symlinks may need admin/developer mode — copy the `skills/terragrunt-skill` directory instead of `ln -s`.
 
 ### Verify Installation
 
@@ -114,14 +122,14 @@ After installation, try:
 "Create a Terragrunt stack for a serverless API with Lambda, DynamoDB, and S3"
 ```
 
-Claude will automatically use the skill when working with Terragrunt code.
+Your agent will automatically use the skill when working with Terragrunt code.
 
 ## Quick Start
 
 ### 1. Create a Catalog Repository
 
 ```bash
-# Ask Claude to scaffold a new catalog
+# Ask your agent to scaffold a new catalog
 "Create a new infrastructure catalog with units for S3, DynamoDB, and Lambda"
 ```
 
@@ -139,7 +147,7 @@ infrastructure-catalog/
 ### 2. Create a Live Repository
 
 ```bash
-# Ask Claude to scaffold a live repo
+# Ask your agent to scaffold a live repo
 "Create a live infrastructure repo for AWS with staging environment"
 ```
 
