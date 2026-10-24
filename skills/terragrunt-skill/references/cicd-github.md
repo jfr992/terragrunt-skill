@@ -35,6 +35,28 @@
 
 ---
 
+## Implicit Stacks and Older Terragrunt
+
+```yaml
+on:
+  pull_request:
+    paths: ["live/**/*.hcl", "catalog/**"]   # explicit stacks: include the stack file + catalog
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    env: { TG_NON_INTERACTIVE: "true" }      # 0.68–0.7x: TERRAGRUNT_NON_INTERACTIVE
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - working-directory: live/prod
+        run: terragrunt run --all --filter "[origin/${{ github.base_ref }}...HEAD]" -- plan
+        # 0.78–0.96: run --all --queue-include-dir <dir> -- plan
+        # 0.68–0.7x: run-all plan --terragrunt-include-dir <dir>
+        # explicit stack: terragrunt stack run -- plan
+```
+
+See [cicd-pipelines.md](cicd-pipelines.md#layouts-and-versions-matrix) for the full matrix.
+
 ## References
 
 ### GitHub Actions OIDC Authentication

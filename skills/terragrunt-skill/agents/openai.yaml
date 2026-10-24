@@ -1,0 +1,4 @@
+interface:
+  display_name: "Terragrunt"
+  short_description: "Terragrunt stacks, units, catalogs, state and CI/CD"
+  default_prompt: "Use $terragrunt-skill to design or review a Terragrunt stack."

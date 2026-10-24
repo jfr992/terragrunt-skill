@@ -1,5 +1,7 @@
 # Classic Live Structure (Implicit Stacks)
 
+> Works on every TG >= 0.68. Use `run-all` before 0.77.22 and `run --all` after it. See [version-compatibility.md](version-compatibility.md).
+
 The classic Gruntwork pattern: units organized in an account/region/environment directory hierarchy, with shared configuration pulled in via `include` blocks. Upstream calls this **implicit stacks** — any directory of units is a stack, no `terragrunt.stack.hcl` required.
 
 **Use this pattern when:**
@@ -196,10 +198,10 @@ The directory you run from defines the implicit stack:
 cd non-prod/us-east-1/qa/mysql && terragrunt apply
 
 # Whole environment, dependency-ordered
-cd non-prod/us-east-1/qa && terragrunt run --all apply
+cd non-prod/us-east-1/qa && terragrunt run --all -- apply
 
 # Whole account
-cd non-prod && terragrunt run --all plan
+cd non-prod && terragrunt run --all -- plan
 
 # Explore an unfamiliar repo first (see discovery-commands.md)
 terragrunt find --dag --dependencies

@@ -5,6 +5,7 @@
 - AWS Authentication Pattern
 - GCP Authentication Pattern
 - Targeting Specific Units
+- Implicit Stacks and Older Terragrunt
 - References
 
 > **Best Practice: Reusable Templates**
@@ -99,11 +100,12 @@ variables:
       echo "===== Stack Plan ====="
 
       # Plan entire stack
-      terragrunt stack run plan \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
 
       # Optional: Use --out-dir to save plans for apply stage
-      # terragrunt stack run plan --out-dir ${CI_PROJECT_DIR}/plans
+      # terragrunt stack run --out-dir ${CI_PROJECT_DIR}/plans -- plan
   artifacts:
     paths:
       - $TG_STACK_PATH/.terragrunt-stack/**/tfplan
@@ -130,11 +132,13 @@ variables:
       echo "===== Stack Apply ====="
 
       # Re-plan and apply (recommended for safety)
-      terragrunt stack run plan \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
 
-      terragrunt stack run apply \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --parallelism ${TG_PARALLELISM} \
+        -- apply
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: manual
@@ -157,9 +161,10 @@ variables:
     - cd $TG_STACK_PATH
     - |
       echo "===== Plan Unit: ${TG_TARGET_UNIT} ====="
-      terragrunt stack run plan \
-        --queue-include-dir ".terragrunt-stack/${TG_TARGET_UNIT}" \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --filter "./.terragrunt-stack/${TG_TARGET_UNIT}" \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
   variables:
     TG_TARGET_UNIT: ""  # Override per job (e.g., "dynamodb", "lambda")
 
@@ -171,13 +176,15 @@ variables:
     - cd $TG_STACK_PATH
     - |
       echo "===== Apply Unit: ${TG_TARGET_UNIT} ====="
-      terragrunt stack run plan \
-        --queue-include-dir ".terragrunt-stack/${TG_TARGET_UNIT}" \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --filter "./.terragrunt-stack/${TG_TARGET_UNIT}" \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
 
-      terragrunt stack run apply \
-        --queue-include-dir ".terragrunt-stack/${TG_TARGET_UNIT}" \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --filter "./.terragrunt-stack/${TG_TARGET_UNIT}" \
+        --parallelism ${TG_PARALLELISM} \
+        -- apply
   variables:
     TG_TARGET_UNIT: ""
 ```
@@ -395,14 +402,43 @@ gcp:dev:dynamodb:apply:
       when: manual
 ```
 
-> **Tip:** Use `--queue-include-dir` to target multiple units:
+> **Tip:** Repeat `--filter` to target multiple units:
 > ```bash
-> terragrunt stack run plan \
->   --queue-include-dir ".terragrunt-stack/s3" \
->   --queue-include-dir ".terragrunt-stack/dynamodb"
+> terragrunt stack run \
+>   --filter "./.terragrunt-stack/s3" \
+>   --filter "./.terragrunt-stack/dynamodb" \
+>   -- plan
 > ```
 
 ---
+
+## Implicit Stacks and Older Terragrunt
+
+The templates above assume explicit stacks on 1.x (`TG_*` variables need 0.73+ (complete in 0.77.22); 0.68–0.72 read only `TERRAGRUNT_*`). For a unit tree without `terragrunt.stack.hcl`, swap the script; full matrix in [cicd-pipelines.md](cicd-pipelines.md#layouts-and-versions-matrix).
+
+```yaml
+.terragrunt_implicit_plan:        # 0.78+ / 1.x
+  stage: plan
+  variables:
+    TG_NON_INTERACTIVE: "true"
+  rules:
+    - changes: ["$TG_LIVE_PATH/**/*.hcl"]
+  script:
+    - cd $TG_LIVE_PATH
+    - terragrunt run --all --parallelism ${TG_PARALLELISM} --filter "[origin/${CI_DEFAULT_BRANCH}...HEAD]" -- plan   # 0.78–0.96: --queue-include-dir <dir> instead
+
+.terragrunt_implicit_plan_068:    # 0.68–0.7x
+  stage: plan
+  variables:
+    TERRAGRUNT_NON_INTERACTIVE: "true"
+  rules:
+    - changes: ["$TG_LIVE_PATH/**/*.hcl"]
+  script:
+    - cd $TG_LIVE_PATH
+    - terragrunt run-all plan --terragrunt-parallelism ${TG_PARALLELISM} ${TG_TARGET_UNIT:+--terragrunt-include-dir "$TG_TARGET_UNIT"}   # "." matches nothing on 0.68
+```
+
+Use a depth of `GIT_DEPTH: 0` (or fetch the default branch) so the git filter and `git diff` can see the base ref.
 
 ## References
 

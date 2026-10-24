@@ -3,15 +3,23 @@ name: Validate Skill
 on:
   pull_request:
     paths:
-      - 'skills/terragrunt-skill/SKILL.md'
-      - 'skills/terragrunt-skill/references/**/*.md'
+      - 'skills/terragrunt-skill/**'
+      - 'scripts/**'
+      - 'evaluations/**'
+      - '.github/workflows/**'
       - '.claude-plugin/**'
+      - 'README.md'
+      - 'AGENTS.md'
   push:
     branches: [master, main]
     paths:
-      - 'skills/terragrunt-skill/SKILL.md'
-      - 'skills/terragrunt-skill/references/**/*.md'
+      - 'skills/terragrunt-skill/**'
+      - 'scripts/**'
+      - 'evaluations/**'
+      - '.github/workflows/**'
       - '.claude-plugin/**'
+      - 'README.md'
+      - 'AGENTS.md'
   workflow_dispatch:
 
 jobs:
@@ -133,6 +141,22 @@ jobs:
 
           print(f"✅ marketplace.json valid (v{version}, {len(marketplace['plugins'])} plugin(s))")
           EOF
+
+      - name: Skill lint (scripts/check-skill.sh)
+        run: ./scripts/check-skill.sh
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Agent Skills spec validation (skills-ref)
+        run: uvx --from skills-ref agentskills validate skills/terragrunt-skill
+
+      - name: Packaging hygiene
+        run: |
+          test -z "$(find skills -type f -size +50k)" || { echo "❌ files > 50 KB in skills/"; find skills -type f -size +50k; exit 1; }
+          test -z "$(find skills -type d -name test-output)" || { echo "❌ test-output/ inside skills/"; exit 1; }
+          test -z "$(find skills -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.svg' \) -not -path '*/assets/images/*')" || { echo "❌ images outside assets/images/"; exit 1; }
+          echo "✅ Packaging OK"
 
       - name: Check for Broken Links
         run: |

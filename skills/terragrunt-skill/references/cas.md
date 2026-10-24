@@ -1,5 +1,7 @@
 # Content Addressable Store (CAS)
 
+> **Requires TG >= 1.1** for GA/default-on (experiment since 0.75.5). See [version-compatibility.md](version-compatibility.md).
+
 The CAS stores fetched source code addressed by content hash, so the same content is downloaded and stored once no matter how many units reference it. Generally available and **enabled by default** since Terragrunt 1.1 — faster clones and less disk usage with no configuration.
 
 ## Contents
@@ -7,6 +9,8 @@ The CAS stores fetched source code addressed by content hash, so the same conten
 - How It Works
 - Self-Contained Catalog Stacks (`update_source_with_cas`)
 - Mutable Materialization
+- Generated Files Are Read-Only (1.2)
+- offline-cas (experiment, 1.1.5+)
 - Flags and Cache Location
 - Pitfalls
 - References
@@ -74,6 +78,37 @@ terraform {
 
 Costs extra disk (copy instead of link). Only needed when something writes into the source tree.
 
+## Generated Files Are Read-Only (1.2)
+
+Since 1.2, `generate` block output is a read-only hard link into the CAS (immutable by default). Hooks or scripts that edit a generated file fail with permission errors. Fix by giving that block its own writable file, or disable CAS with `--no-cas` (then `mutable` has no effect):
+
+```hcl
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite"
+  mutable   = true
+  contents  = <<EOF
+provider "aws" {
+  region = "us-east-1"
+}
+EOF
+}
+```
+
+Most `generate` blocks don't need it — Terragrunt regenerates the file every run and tofu/terraform only read it. The `remote_state` backend file is always written plainly.
+
+## offline-cas (experiment, 1.1.5+)
+
+**Experimental.** `--experiment offline-cas` enables a probe cache recording what each source resolved to, and unlocks:
+
+| Flag | Effect |
+|------|--------|
+| `--cas-offline` | Never contact a remote; resolve from recorded probes + local store, error if missing |
+| `--cas-refresh` | Ignore recorded probes for one run and re-ask every remote (e.g. a moved tag) |
+| `--cas-probe-ttl 10m` | Trust recorded probes of mutable sources for this duration |
+
+Pinned sources are trusted for 24h. Using these flags without the experiment is an error.
+
 ## Flags and Cache Location
 
 | Flag | Effect |
@@ -81,7 +116,7 @@ Costs extra disk (copy instead of link). Only needed when something writes into 
 | `--no-cas` | Disable CAS for `run`, `stack generate`, `stack run`, `catalog` |
 | `--cas-clone-depth N` | Git clone depth (default 1; `-1` for full history) |
 
-Cache lives at `~/Library/Caches/terragrunt/cas` (macOS), `~/.cache/terragrunt/cas` (Linux), `%LocalAppData%\terragrunt\cas` (Windows). Safe to delete when no Terragrunt process is running.
+Cache lives at `~/Library/Caches/terragrunt/cas` (macOS), `$XDG_CACHE_HOME/terragrunt/cas` falling back to `~/.cache/terragrunt/cas` (Linux; XDG honored since 1.0.4), `%LocalAppData%\terragrunt\cas` (Windows). Safe to delete when no Terragrunt process is running.
 
 ## Pitfalls
 
@@ -91,7 +126,10 @@ Cache lives at `~/Library/Caches/terragrunt/cas` (macOS), `~/.cache/terragrunt/c
 
 ## References
 
-- [CAS Documentation](https://docs.terragrunt.com/features/cas/)
+- [CAS Documentation](https://docs.terragrunt.com/features/caching/cas/)
+- [Immutable by default](https://docs.terragrunt.com/features/caching/cas#immutable-by-default)
+- [Terragrunt 1.2 Release](https://github.com/gruntwork-io/terragrunt/releases/tag/v1.2.0)
+- [offline-cas experiment](https://docs.terragrunt.com/reference/experiments/active#offline-cas)
 - [Terragrunt 1.1 Release](https://github.com/gruntwork-io/terragrunt/releases/tag/v1.1.0)
 - [Performance Guide](performance.md)
 - [Unit Dependencies](dependencies.md)

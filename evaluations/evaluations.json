@@ -1,19 +1,160 @@
 {
   "skill": "terragrunt-skill",
   "should_trigger": [
-    {"query": "Set up a new Terragrunt catalog with units for VPC and EKS", "expected_behavior": ["Loads skill", "Uses explicit stacks (catalog + terragrunt.stack.hcl + values) as default", "Reads catalog-structure.md"]},
-    {"query": "I have an infrastructure-live repo with _envcommon and account/region/env folders — add a new RDS component to staging", "expected_behavior": ["Loads skill", "Recognizes classic implicit-stacks layout", "Reads classic-live-structure.md", "Uses include root + envcommon with expose, modern CLI (run --all, use_lockfile)"]},
-    {"query": "Migrate our monolithic Terraform repo to Terragrunt", "expected_behavior": ["Loads skill", "References the terralith-to-terragrunt migration guidance"]},
-    {"query": "Configure S3 remote state with locking for OpenTofu 1.10", "expected_behavior": ["Loads skill", "Recommends use_lockfile = true, not DynamoDB", "Mentions terragrunt backend bootstrap"]},
-    {"query": "What units exist in this Terragrunt repo and what depends on what?", "expected_behavior": ["Loads skill", "Uses terragrunt find --json --dependencies or terragrunt list --tree"]},
-    {"query": "Add a GitLab CI pipeline that plans and applies our Terragrunt stacks with OIDC to AWS", "expected_behavior": ["Loads skill", "Reads cicd-pipelines.md and cicd-gitlab.md", "Uses stack run / run --all with OIDC templates"]},
-    {"query": "Every catalog version bump makes CI plan all our units — how do we get Terragrunt to only plan what actually changed?", "expected_behavior": ["Loads skill", "Reads cas.md", "Recommends update_source_with_cas with relative catalog sources", "Mentions --filter-affected or reading= change-based filtering"]},
-    {"query": "Wire the app unit to the vpc unit in our terragrunt.stack.hcl without touching the catalog units", "expected_behavior": ["Loads skill", "Reads dependencies.md", "Presents autoinclude (1.1+) vs values pattern with trade-offs", "Uses unit.vpc.path in autoinclude example"]}
+    {
+      "query": "Set up a new Terragrunt catalog with units for VPC and EKS",
+      "expected_behavior": [
+        "Loads skill",
+        "Uses explicit stacks (catalog + terragrunt.stack.hcl + values) as default",
+        "Reads catalog-structure.md"
+      ]
+    },
+    {
+      "query": "I have an infrastructure-live repo with _envcommon and account/region/env folders — add a new RDS component to staging",
+      "expected_behavior": [
+        "Loads skill",
+        "Recognizes classic implicit-stacks layout",
+        "Reads classic-live-structure.md",
+        "Uses include root + envcommon with expose, modern CLI (run --all, use_lockfile)"
+      ]
+    },
+    {
+      "query": "Migrate our monolithic Terraform repo to Terragrunt",
+      "expected_behavior": [
+        "Loads skill",
+        "References the terralith-to-terragrunt migration guidance"
+      ]
+    },
+    {
+      "query": "Configure S3 remote state with locking for OpenTofu 1.10",
+      "expected_behavior": [
+        "Loads skill",
+        "Recommends use_lockfile = true, not DynamoDB",
+        "Mentions terragrunt backend bootstrap"
+      ]
+    },
+    {
+      "query": "What units exist in this Terragrunt repo and what depends on what?",
+      "expected_behavior": [
+        "Loads skill",
+        "Uses terragrunt find --json --dependencies or terragrunt list --tree"
+      ]
+    },
+    {
+      "query": "Add a GitLab CI pipeline that plans and applies our Terragrunt stacks with OIDC to AWS",
+      "expected_behavior": [
+        "Loads skill",
+        "Reads cicd-pipelines.md and cicd-gitlab.md",
+        "Uses stack run / run --all with OIDC templates"
+      ]
+    },
+    {
+      "query": "Every catalog version bump makes CI plan all our units — how do we get Terragrunt to only plan what actually changed?",
+      "expected_behavior": [
+        "Loads skill",
+        "Reads cas.md",
+        "Recommends update_source_with_cas with relative catalog sources",
+        "Mentions --filter-affected or reading= change-based filtering"
+      ]
+    },
+    {
+      "query": "Wire the app unit to the vpc unit in our terragrunt.stack.hcl without touching the catalog units",
+      "expected_behavior": [
+        "Loads skill",
+        "Reads dependencies.md",
+        "Presents autoinclude (1.1+) vs values pattern with trade-offs",
+        "Uses unit.vpc.path in autoinclude example"
+      ]
+    },
+    {
+      "query": "Deploy the same app unit for web, api and worker without three copy-pasted unit blocks",
+      "expected_behavior": [
+        "Loads skill",
+        "Reads expansion.md",
+        "Uses an `expansion { for_each }` block on the unit",
+        "Unit `path` uses `each.key`"
+      ]
+    },
+    {
+      "query": "Our before_hook sed-patches provider.tf and now fails with permission denied after upgrading Terragrunt",
+      "expected_behavior": [
+        "Loads skill",
+        "Reads cas.md",
+        "Explains generated files are read-only CAS links in 1.2",
+        "Recommends `mutable = true` on the generate block or `--no-cas`"
+      ]
+    },
+    {
+      "query": "Pull our VPC module from GHCR instead of git",
+      "expected_behavior": [
+        "Loads skill",
+        "Uses an `oci://` source with `?tag=` or `?digest=`"
+      ]
+    },
+    {
+      "query": "Use MinIO/OCI Object Storage for state with locking",
+      "expected_behavior": [
+        "Loads skill",
+        "Uses `use_lockfile` (S3 conditional writes)",
+        "Warns conditional-write support varies by S3-compatible backend",
+        "Suggests a concurrency/lock test before relying on it"
+      ]
+    },
+    {
+      "query": "Why is dependency output fetching faster now, and how do I disable it?",
+      "expected_behavior": [
+        "Loads skill",
+        "Explains outputs are read from remote state by default since 1.2 (S3/GCS/azurerm)",
+        "Gives `--no-dependency-fetch-output-from-state` opt-out"
+      ]
+    },
+    {
+      "query": "Use Azure storage for Terragrunt state",
+      "expected_behavior": [
+        "Loads skill",
+        "Uses the azurerm backend in remote_state",
+        "Uses `terragrunt backend bootstrap` to create storage"
+      ]
+    },
+    {
+      "query": "We're on terragrunt 0.68 with run-all and --terragrunt-non-interactive in CI. How do I add a new unit that depends on our vpc?",
+      "expected_behavior": [
+        "Detects/asks TG version (terragrunt --version, .terragrunt-version, mise.toml)",
+        "Uses classic layout with dependency blocks and run-all/--terragrunt-* flags valid for 0.68",
+        "Does not suggest terragrunt.stack.hcl, autoinclude, expansion or run --all without noting the version requirement",
+        "References version-compatibility.md"
+      ]
+    },
+    {
+      "query": "We use Terraform 1.9 not OpenTofu with terragrunt. Can I drop DynamoDB locking and encrypt state?",
+      "expected_behavior": [
+        "Says S3 use_lockfile needs Terraform >= 1.11 (experimental in 1.10) and TG >= 0.82.4 for native handling",
+        "States remote_state encryption is OpenTofu-only and not available on Terraform",
+        "Suggests upgrading Terraform or switching to OpenTofu as options"
+      ]
+    },
+    {
+      "query": "Upgrading our terragrunt 0.77 repo to 1.2, what breaks in our scripts?",
+      "expected_behavior": [
+        "Maps run-all -> run --all, *-all removed 0.84, --terragrunt-* flags removed 0.85, default command forwarding -> run --",
+        "Mentions TERRAGRUNT_* -> TG_* env vars",
+        "Suggests incremental upgrade and checking terragrunt_version_constraint"
+      ]
+    }
   ],
   "should_not_trigger": [
-    {"query": "Write a Terraform module for an S3 bucket with versioning", "reason": "Pure module authoring, no Terragrunt orchestration — terraform-skill territory"},
-    {"query": "Why is my Kubernetes pod stuck in CrashLoopBackOff?", "reason": "Unrelated domain"},
-    {"query": "Explain HCL syntax for dynamic blocks", "reason": "Generic HCL language feature, excluded by skill's content philosophy"}
+    {
+      "query": "Write a Terraform module for an S3 bucket with versioning",
+      "reason": "Pure module authoring, no Terragrunt orchestration — terraform-skill territory"
+    },
+    {
+      "query": "Why is my Kubernetes pod stuck in CrashLoopBackOff?",
+      "reason": "Unrelated domain"
+    },
+    {
+      "query": "Explain HCL syntax for dynamic blocks",
+      "reason": "Generic HCL language feature, excluded by skill's content philosophy"
+    }
   ],
-  "notes": "Manual harness: run each query in a fresh Claude Code session with the skill installed; verify trigger + expected behaviors. No automated runner yet."
+  "notes": "Manual harness: run each query in a fresh session of any Agent Skills–compatible agent (Claude Code, Codex, Cursor, Gemini CLI) with the skill installed; verify trigger + expected behaviors. No automated runner yet."
 }

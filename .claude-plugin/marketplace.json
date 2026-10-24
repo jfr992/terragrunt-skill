@@ -5,14 +5,14 @@
   },
   "version": "1.8.0",
   "metadata": {
-    "description": "Terragrunt infrastructure-as-code patterns with OpenTofu/Terraform - stacks, units, catalog patterns, CI/CD pipelines",
+    "description": "Agent-agnostic Terragrunt skill (Agent Skills format) for Terragrunt 0.68 to 1.2 with OpenTofu or Terraform - stacks, units, catalogs, remote state, version compatibility, CI/CD pipelines",
     "repository": "https://github.com/jfr992/terragrunt-skill",
     "license": "Apache-2.0"
   },
   "plugins": [
     {
       "name": "terragrunt-skill",
-      "description": "Use when working with Terragrunt - creating stacks, units, catalog patterns, setting up CI/CD pipelines (GitLab CI, GitHub Actions), configuring AWS/GCP OIDC authentication, optimizing performance with provider caching, or managing multi-account deployments",
+      "description": "Use when working with Terragrunt (0.68 to 1.2; OpenTofu or Terraform) - stacks, units, catalogs, expansion, dependencies, remote state, CAS/OCI sources, version upgrades, CI/CD pipelines (GitLab CI, GitHub Actions), AWS/GCP OIDC, performance, multi-account deployments",
       "source": "./",
       "category": "development",
       "keywords": [
