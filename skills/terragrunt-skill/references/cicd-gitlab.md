@@ -414,7 +414,7 @@ gcp:dev:dynamodb:apply:
 
 ## Implicit Stacks and Older Terragrunt
 
-The templates above assume explicit stacks on 1.x (`TG_*` variables need 0.78+; 0.68–0.7x reads `TERRAGRUNT_*`). For a unit tree without `terragrunt.stack.hcl`, swap the script; full matrix in [cicd-pipelines.md](cicd-pipelines.md#layouts-and-versions-matrix).
+The templates above assume explicit stacks on 1.x (`TG_*` variables need 0.73+ (complete in 0.77.22); 0.68–0.72 read only `TERRAGRUNT_*`). For a unit tree without `terragrunt.stack.hcl`, swap the script; full matrix in [cicd-pipelines.md](cicd-pipelines.md#layouts-and-versions-matrix).
 
 ```yaml
 .terragrunt_implicit_plan:        # 0.78+ / 1.x

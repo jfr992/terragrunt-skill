@@ -116,7 +116,7 @@ Pinned sources are trusted for 24h. Using these flags without the experiment is 
 | `--no-cas` | Disable CAS for `run`, `stack generate`, `stack run`, `catalog` |
 | `--cas-clone-depth N` | Git clone depth (default 1; `-1` for full history) |
 
-Cache lives at `~/Library/Caches/terragrunt/cas` (macOS), `~/.cache/terragrunt/cas` (Linux), `%LocalAppData%\terragrunt\cas` (Windows). Safe to delete when no Terragrunt process is running.
+Cache lives at `~/Library/Caches/terragrunt/cas` (macOS), `$XDG_CACHE_HOME/terragrunt/cas` falling back to `~/.cache/terragrunt/cas` (Linux; XDG honored since 1.0.4), `%LocalAppData%\terragrunt\cas` (Windows). Safe to delete when no Terragrunt process is running.
 
 ## Pitfalls
 
@@ -126,7 +126,7 @@ Cache lives at `~/Library/Caches/terragrunt/cas` (macOS), `~/.cache/terragrunt/c
 
 ## References
 
-- [CAS Documentation](https://docs.terragrunt.com/features/cas/)
+- [CAS Documentation](https://docs.terragrunt.com/features/caching/cas/)
 - [Immutable by default](https://docs.terragrunt.com/features/caching/cas#immutable-by-default)
 - [Terragrunt 1.2 Release](https://github.com/gruntwork-io/terragrunt/releases/tag/v1.2.0)
 - [offline-cas experiment](https://docs.terragrunt.com/reference/experiments/active#offline-cas)

@@ -48,7 +48,7 @@ Key settings:
 
 #### Legacy: DynamoDB locking
 
-For OpenTofu < 1.10, Terraform, or existing repos already using a lock table, replace `use_lockfile = true` with:
+For OpenTofu < 1.10, Terraform < 1.11, or existing repos already using a lock table, replace `use_lockfile = true` with:
 
 ```hcl
     dynamodb_table = format("tfstate-locks-%s-%s", local.account_name, local.aws_region)

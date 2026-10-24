@@ -53,8 +53,10 @@ If `tofu` and `terraform` are both present, Terragrunt prefers `tofu` unless `--
 | `--filter` | 0.91.2 (experiment), **0.97.0** (GA) | |
 | `autoinclude`, `unit.<n>.path` / `stack.<n>.path` in stack files | 1.0.1 (experiment), **1.1.0** (GA) | `unit.a.path` fails with `Unknown variable` on 0.78.1 and 1.0.0 (tested). |
 | `expansion` (`for_each`/`count`), `enabled` | 1.1.3 (experiment), **1.2.0** (GA) | |
-| Dependency outputs read from state by default | **1.2.0** | Earlier: opt in with the `dependency-fetch-output-from-state` experiment flag (first version *UNVERIFIED*). |
+| Dependency outputs read from state by default | **1.2.0** | Earlier: opt in with the `dependency-fetch-output-from-state` experiment (added in **0.96.0**). |
 | OCI module sources, `version` constraints | **1.2.0** | |
+| Auto provider cache dir (`TF_PLUGIN_CACHE_DIR`, OpenTofu >= 1.10 only) | 0.82.3 (experiment), **0.89.0** (default) | Silently does nothing on Terraform or OpenTofu < 1.10. |
+| Global cache dir honors `XDG_CACHE_HOME` (CAS, auto provider cache) | **1.0.4** | Earlier versions use `~/.cache/terragrunt` on Linux. |
 
 ## Old → new CLI mapping
 
@@ -76,7 +78,7 @@ If `tofu` and `terraform` are both present, Terragrunt prefers `tofu` unless `--
 | `--terragrunt-working-dir` | `--working-dir` | 0.85.0 |
 | `--terragrunt-include-dir` / `--terragrunt-exclude-dir` | `--queue-include-dir` / `--queue-exclude-dir` (later `--filter`) | 0.85.0 |
 | `TERRAGRUNT_*` env vars | `TG_*` env vars | not removed (still accepted in 1.2.1). 0.68 ignores `TG_*`. Not a 1:1 rename: `TERRAGRUNT_DOWNLOAD` → `TG_DOWNLOAD_DIR` |
-| auto provider cache dir (OpenTofu >= 1.10) | — | experiment 0.86, default **0.89** |
+| auto provider cache dir (OpenTofu >= 1.10) | — | experiment **0.82.3** (`--experiment auto-provider-cache-dir`), default **0.89.0** (opt out `--no-auto-provider-cache-dir`) |
 
 Tested on Floci with a two-unit classic layout: TG 0.68.0 `run-all plan --terragrunt-non-interactive --terragrunt-tfpath …` works. 0.78.1 accepts both forms and prints deprecation warnings for the old ones. 1.0.0 rejects `--terragrunt-non-interactive` and `run-all`. 1.2.1 prints `unknown command: "run-all"`.
 
