@@ -97,7 +97,10 @@ This creates separate buckets per environment:
 `use_lockfile = true` relies on S3 **conditional writes** (`If-None-Match` on the `.tflock` object). The Terragrunt/OpenTofu docs do not list which S3-compatible providers implement this.
 
 - **OCI Object Storage: works** (field result, reported in testing — a second lock attempt gets HTTP 412). Not documented by the vendor or Terragrunt.
-- **MinIO, Cloudflare R2, Ceph RGW, others: UNVERIFIED** — test before relying on it.
+- **MinIO: works** (tested 2026-10 with Terragrunt 1.2.1 + OpenTofu 1.10.6: second `plan -lock-timeout=0s` while an apply held the lock failed with `Error acquiring the state lock … StatusCode: 412 PreconditionFailed`).
+- **Floci (local AWS emulator, good for testing): works** (same test, same 412 result).
+- **Cloudflare R2: documented** — `PutObject` supports `If-None-Match: *` atomically, losers get 412 ([R2 S3 API compatibility](https://developers.cloudflare.com/r2/api/s3/api/), [consistency model](https://developers.cloudflare.com/r2/reference/consistency/)). Not tested here.
+- **Ceph RGW, others: UNVERIFIED** — RGW's `PutObject` docs don't list `If-None-Match` (only a tracker issue, https://tracker.ceph.com/issues/8562). Test before relying on it: hold the lock with one `apply`, run `plan -lock-timeout=0s` in a second shell, and expect `Error acquiring the state lock`.
 
 ```hcl
 remote_state {
