@@ -99,11 +99,12 @@ variables:
       echo "===== Stack Plan ====="
 
       # Plan entire stack
-      terragrunt stack run plan \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
 
       # Optional: Use --out-dir to save plans for apply stage
-      # terragrunt stack run plan --out-dir ${CI_PROJECT_DIR}/plans
+      # terragrunt stack run --out-dir ${CI_PROJECT_DIR}/plans -- plan
   artifacts:
     paths:
       - $TG_STACK_PATH/.terragrunt-stack/**/tfplan
@@ -130,11 +131,13 @@ variables:
       echo "===== Stack Apply ====="
 
       # Re-plan and apply (recommended for safety)
-      terragrunt stack run plan \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
 
-      terragrunt stack run apply \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --parallelism ${TG_PARALLELISM} \
+        -- apply
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: manual
@@ -157,9 +160,10 @@ variables:
     - cd $TG_STACK_PATH
     - |
       echo "===== Plan Unit: ${TG_TARGET_UNIT} ====="
-      terragrunt stack run plan \
-        --queue-include-dir ".terragrunt-stack/${TG_TARGET_UNIT}" \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --filter "./.terragrunt-stack/${TG_TARGET_UNIT}" \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
   variables:
     TG_TARGET_UNIT: ""  # Override per job (e.g., "dynamodb", "lambda")
 
@@ -171,13 +175,15 @@ variables:
     - cd $TG_STACK_PATH
     - |
       echo "===== Apply Unit: ${TG_TARGET_UNIT} ====="
-      terragrunt stack run plan \
-        --queue-include-dir ".terragrunt-stack/${TG_TARGET_UNIT}" \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --filter "./.terragrunt-stack/${TG_TARGET_UNIT}" \
+        --parallelism ${TG_PARALLELISM} \
+        -- plan
 
-      terragrunt stack run apply \
-        --queue-include-dir ".terragrunt-stack/${TG_TARGET_UNIT}" \
-        --parallelism ${TG_PARALLELISM}
+      terragrunt stack run \
+        --filter "./.terragrunt-stack/${TG_TARGET_UNIT}" \
+        --parallelism ${TG_PARALLELISM} \
+        -- apply
   variables:
     TG_TARGET_UNIT: ""
 ```
@@ -395,11 +401,12 @@ gcp:dev:dynamodb:apply:
       when: manual
 ```
 
-> **Tip:** Use `--queue-include-dir` to target multiple units:
+> **Tip:** Repeat `--filter` to target multiple units:
 > ```bash
-> terragrunt stack run plan \
->   --queue-include-dir ".terragrunt-stack/s3" \
->   --queue-include-dir ".terragrunt-stack/dynamodb"
+> terragrunt stack run \
+>   --filter "./.terragrunt-stack/s3" \
+>   --filter "./.terragrunt-stack/dynamodb" \
+>   -- plan
 > ```
 
 ---

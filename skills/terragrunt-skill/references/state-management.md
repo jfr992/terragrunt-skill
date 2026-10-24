@@ -4,6 +4,8 @@
 - Remote State Configuration
 - State Isolation
 - Environment-Based State Buckets
+- S3-Compatible Backends (MinIO, OCI, R2, Ceph…)
+- Azure (azurerm)
 - State Backend Bootstrap
 - State Migration
 - Avoiding Workspaces
@@ -90,6 +92,48 @@ This creates separate buckets per environment:
 - `tfstate-myproject-nonprod-staging-us-east-1`
 - `tfstate-myproject-nonprod-dev-us-east-1`
 
+## S3-Compatible Backends (MinIO, OCI, R2, Ceph…)
+
+`use_lockfile = true` relies on S3 **conditional writes** (`If-None-Match` on the `.tflock` object). The Terragrunt/OpenTofu docs do not list which S3-compatible providers implement this.
+
+- **OCI Object Storage: works** (field result, reported in testing — a second lock attempt gets HTTP 412). Not documented by the vendor or Terragrunt.
+- **MinIO, Cloudflare R2, Ceph RGW, others: UNVERIFIED** — test before relying on it.
+
+```hcl
+remote_state {
+  backend = "s3"
+  config = {
+    bucket       = "tfstate-myproject"
+    key          = "${path_relative_to_include()}/terraform.tfstate"
+    region       = "us-ashburn-1"                     # provider-specific
+    use_lockfile = true
+    endpoints    = { s3 = "https://<namespace>.compat.objectstorage.<region>.oraclecloud.com" } # provider-specific
+    use_path_style              = true                # provider-specific (MinIO/OCI usually need it)
+    skip_credentials_validation = true                # provider-specific
+    skip_region_validation      = true                # provider-specific
+    skip_requesting_account_id  = true                # provider-specific
+    skip_s3_checksum            = true                # provider-specific
+  }
+  generate = { path = "backend.tf", if_exists = "overwrite_terragrunt" }
+}
+```
+
+**Deterministic lock test** (disposable bucket/prefix — never against real state):
+
+```bash
+# shell 1: hold the lock (console holds a state lock until you exit)
+terragrunt run -- console
+# shell 2: must fail with an error mentioning "lock"
+terragrunt run -- plan -lock-timeout=0s
+# after shell 1 exits, shell 2 must succeed
+```
+
+If the provider lacks conditional writes, fall back to a DynamoDB-compatible lock table (`dynamodb_table` + `endpoints.dynamodb`) or run without locking (not recommended).
+
+## Azure (azurerm)
+
+The `azurerm` backend is GA in Terragrunt 1.2: `terragrunt backend bootstrap`, `backend delete`, and `backend migrate` work with it, and dependency outputs can be read directly from azurerm state. See [completed experiments: azure-backend](https://docs.terragrunt.com/reference/experiments/completed/#azure-backend).
+
 ## State Backend Bootstrap
 
 Terragrunt natively provisions backend resources from the `remote_state` block — no external script needed:
@@ -109,6 +153,23 @@ terragrunt backend delete
 ```
 
 The bucket is created with versioning, server-side encryption, public access blocked, and a TLS-enforced policy. By default Terragrunt also auto-bootstraps on first `init`/`plan` when the backend doesn't exist; `backend bootstrap` makes it explicit, which is preferable in CI (least-privilege pipelines can run it once with elevated rights, then drop them).
+
+
+### 1.2 bootstrap change: no bucket root-access statement
+
+Since Terragrunt 1.2, S3 bootstrap **no longer adds** the `arn:aws:iam::<account>:root` statement to the state bucket policy. To keep the old behavior:
+
+```hcl
+remote_state {
+  backend = "s3"
+  config = {
+    # ...
+    enable_bucket_root_access = true
+  }
+}
+```
+
+`skip_bucket_root_access` is deprecated (strict control `skip-bucket-root-access`). Buckets bootstrapped by earlier versions keep the existing statement. See the [v1.2.0 release](https://github.com/gruntwork-io/terragrunt/releases/tag/v1.2.0).
 
 ## State Migration
 
