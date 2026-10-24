@@ -7,6 +7,12 @@ description: >-
   (_envcommon), migrating a terralith, exploring repos (find, list, dag), wiring dependencies (autoinclude,
   values), expansion blocks (for_each/count), the Content Addressable Store (CAS), OCI and versioned module
   sources, upgrading to 1.2, and CI/CD pipelines (GitHub Actions, GitLab).
+license: Apache-2.0
+compatibility: Terragrunt >= 1.2 with OpenTofu >= 1.10 recommended (Terraform supported). Agent-agnostic.
+metadata:
+  version: "2.0.0"
+  terragrunt: "1.2"
+  author: jfr992
 ---
 
 # Terragrunt Infrastructure Skill
