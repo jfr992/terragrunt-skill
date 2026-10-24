@@ -73,7 +73,7 @@ inputs = {
 
 - **Growing:** with `for_each`, stable keys, and an unchanged `path` template, adding a key only adds a new unit — existing elements keep their state.
 - **`count` reindexes:** removing/reordering list items shifts `count.index`, so units change identity. Prefer `for_each` with stable keys.
-- **Converting an existing unit to `expansion`** changes its generated path, and therefore its state key → plan a state migration first (UNVERIFIED: exact path layout — check the blocks reference before migrating).
+- **Converting an existing unit to `expansion`**: the state key follows the generated `path` (with the usual `path_relative_to_include()` key). Going from `path = "app"` to `path = "app/${each.key}"` moves the state from `.terragrunt-stack/app/…` to `.terragrunt-stack/app/web/…`, so the new unit starts with empty state. Migrate the state first (copy or move the state object to the new key, or `tofu state pull`/`push`). If one element keeps the old `path`, its key stays the same (tested on Terragrunt 1.2.1 with an S3 backend).
 - **Shrinking orphans units:** removing a key stops generating that unit but does not destroy its infrastructure.
   - Find and clean up orphans with Git filters, which may destroy removed units only with an explicit opt-in:
     ```bash

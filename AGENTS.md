@@ -4,6 +4,8 @@ Context for any coding agent (Codex, Cursor, Gemini CLI, Claude Code, ...) or hu
 
 **Before committing:** run `./scripts/check-skill.sh` (must print `OK`).
 
+**Major releases:** the release workflow uses the **Angular** preset, which does **not** recognise `feat!:` by itself (a bare `feat!:` commit gives a patch bump). Add a `BREAKING CHANGE:` footer to the commit body to get a major bump.
+
 ## Repository Architecture
 
 This skill uses **progressive disclosure** to minimize token usage:

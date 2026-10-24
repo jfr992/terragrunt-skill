@@ -293,8 +293,8 @@ terragrunt stack run apply --filter '.terragrunt-stack/karpenter...'
 
 ## Gotchas
 
-- `unit.<name>.path` / `stack.<name>.path` resolve only inside the **same** `terragrunt.stack.hcl`. Passing them via `values` yields **absolute** paths in the generated `terragrunt.values.hcl` (field-tested, UNVERIFIED in docs) — don't commit or diff generated values expecting relative paths.
-- `locals` cannot reference `dependency.*` — locals are evaluated before dependencies (see [configuration parsing order](https://docs.terragrunt.com/reference/hcl#configuration-parsing-order)). Compute dependency-derived values in `inputs`.
+- `unit.<name>.path` / `stack.<name>.path` resolve only inside the **same** `terragrunt.stack.hcl`: a nested stack file can't see the parent's `unit.a`, and the parent can't see a nested stack's `unit.c1` (both fail with `Unsupported attribute`); the parent can reference `stack.<child>.path`. Passing them via `values` yields **absolute** paths in the generated `terragrunt.values.hcl` (e.g. `/…/live/.terragrunt-stack/a`) — don't commit or diff generated values expecting relative paths. (Tested on Terragrunt 1.2.1; not stated in the docs.)
+- `locals` cannot reference `dependency.*` — locals are evaluated before dependencies (see [configuration parsing order](https://docs.terragrunt.com/reference/hcl#configuration-parsing-order)). Compute dependency-derived values in `inputs`. Terragrunt 1.2.1 fails with: `Locals can only reference these variables: local, include, feature, values. This expression references "dependency".`
 - Two `dependency` blocks with the same label or the same `config_path` produce a warning; enable `--strict-control duplicate-dependency-labels` in CI to make it an error.
 - Use `--no-dependency-outputs` for `init`/`validate` before dependencies have been applied.
 
