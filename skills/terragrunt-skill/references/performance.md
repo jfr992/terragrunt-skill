@@ -146,7 +146,7 @@ On 0.82.3–0.88 use the `TG_*` names, or `TG_EXPERIMENT=auto-provider-cache-dir
 
 ### Benchmark: terragrunt-cache-test re-run (this PR, 2026-10-24)
 
-> **Caveats:** 2–3 runs on 3 units; differences under ~2 s are noise. TG < 1.0.4 ignores `XDG_CACHE_HOME` and keeps its global cache in `~/.cache/terragrunt`, which these "cold" runs did not wipe, so 0.86/0.89 cold numbers may be partly warm. Prefer the controlled synthetic results below (rigorous-bench: hyperfine, 3 warm-ups + 10 runs, offline mirror).
+> **Caveats:** 2–3 runs on 3 units; differences under ~2 s are noise. TG < 1.0.4 ignores `XDG_CACHE_HOME` and keeps its global cache in `~/.cache/terragrunt`, which these "cold" runs did not wipe, so 0.86/0.89 cold numbers may be partly warm. Prefer the controlled synthetic results below (30/100 units) (rigorous-bench: hyperfine, 3 warm-ups + 10 runs, offline mirror).
 
 Environment: Linux x86_64 box, OpenTofu 1.10.6, 3 units (`aws`, `kubernetes`, `tls`, `null`, `helm`, `kubectl` providers, ~870 MB), local state, boring-registry pull-through on MinIO (chainguard image) on localhost. Median seconds of 3 runs (0.68–0.86 rows) or 2 runs (rest). **cold** = all caches wiped; **checkout** = fresh `.terragrunt-cache` and lock files committed, provider cache kept (typical CI with a persisted cache); **warm** = re-run in place.
 
@@ -204,7 +204,7 @@ Takeaways:
 | 1.2.1 `--no-auto-provider-cache-dir` | 4.03 ± 0.33 | 10.42 ± 0.25 |
 | 1.2.1 cache server | n/a | 2.15 ± 0.47 |
 
-Results at 1000 units were not reproducible: across two 3-run sessions, 1.2.1 implicit took 46.0 s and then 28.3 s, and the layouts swapped places, so this file does not quote them. Takeaways: 1.x has lower per-unit overhead than 0.68, and the auto provider cache dir accounts for most of the cold-init win. Explicit and implicit layouts are within noise of each other.
+Takeaways: 1.x has lower per-unit overhead than 0.68, and the auto provider cache dir accounts for most of the cold-init win. Explicit and implicit layouts are within noise of each other.
 
 ## Measuring Performance
 
