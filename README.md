@@ -97,6 +97,9 @@ The skill lives in `skills/terragrunt-skill/` (a standard Agent Skills directory
 git clone https://github.com/jfr992/terragrunt-skill.git ~/src/terragrunt-skill
 # Codex, Cursor, Gemini CLI (shared user dir)
 mkdir -p ~/.agents/skills && ln -s ~/src/terragrunt-skill/skills/terragrunt-skill ~/.agents/skills/terragrunt-skill
+# Codex (plugin marketplace: .agents/plugins/marketplace.json + root plugin.json)
+codex plugin marketplace add jfr992/terragrunt-skill   # optionally --ref <tag>
+codex plugin add terragrunt-skill@jfr992
 # Claude Code (marketplace)
 /plugin marketplace add jfr992/terragrunt-skill
 /plugin install terragrunt-skill@jfr992
@@ -107,7 +110,7 @@ mkdir -p ~/.claude/skills && ln -s ~/src/terragrunt-skill/skills/terragrunt-skil
 
 | Agent | Skill directories read |
 |-------|------------------------|
-| Codex | `.agents/skills`, `~/.agents/skills` |
+| Codex | `.agents/skills`, `~/.agents/skills` (or the plugin marketplace via `.agents/plugins/marketplace.json`) |
 | Cursor | `.agents/skills`, `~/.agents/skills`, also `.cursor/skills`, `.claude/skills` |
 | Gemini CLI | `.agents/skills`, `~/.agents/skills`, also `.gemini/skills` |
 | Claude Code | `.claude/skills`, `~/.claude/skills` only (or the plugin marketplace via `.claude-plugin/marketplace.json`) |

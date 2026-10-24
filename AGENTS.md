@@ -33,6 +33,7 @@ This skill uses **progressive disclosure** to minimize token usage:
   - `state-management.md`: State backend configuration: native S3 lockfile (OpenTofu >= 1.10 / Terraform >= 1.11) and legacy DynamoDB patterns
   - `version-compatibility.md`: Terragrunt 0.68→1.2 feature matrix, old→new CLI mapping, OpenTofu vs Terraform
 - **scripts/check-skill.sh**: Skill lint (description length, line count, stale experiment flags, broken reference links, stale `>= 1.2` version claims, version scope consistent across SKILL.md and the manifests)
+- **plugin.json** + **.agents/plugins/marketplace.json**: Codex / Agent Plugins manifest and repo marketplace (`codex plugin marketplace add jfr992/terragrunt-skill`)
 - **.claude-plugin/**: Claude Code marketplace distribution configuration (kept for Claude Code users; the skill itself is agent-agnostic)
 - **.github/workflows/**: CI/CD for validation and automated releases
 
