@@ -1,3 +1,26 @@
+# [2.0.0](https://github.com/jfr992/terragrunt-skill/compare/v1.8.0...v2.0.0) (2026-10-24)
+
+
+* feat!: agent-agnostic skill metadata ([2a21abc](https://github.com/jfr992/terragrunt-skill/commit/2a21abc5fd4cac1f68ea751ba4d558807f983b5b))
+
+
+### Features
+
+* Terragrunt 1.2 coverage in SKILL.md ([36c920a](https://github.com/jfr992/terragrunt-skill/commit/36c920aa8a522fc3def8490eec027fc2b118e5af))
+
+
+### Performance Improvements
+
+* caveat old 3-unit table, add rigorous-bench results, drop unreproducible 1000-unit claims ([daf764e](https://github.com/jfr992/terragrunt-skill/commit/daf764e869cc6e980d46a50812a0deae3883285e))
+* publish only 30/100-unit benchmark data ([21e06ac](https://github.com/jfr992/terragrunt-skill/commit/21e06ace70308e1b88a6d261708653afa9489cae))
+
+
+### BREAKING CHANGES
+
+* skill is now packaged for any Agent Skills-compatible agent (license/compatibility/metadata frontmatter, Codex agents/openai.yaml); contributor guide moved to AGENTS.md.
+
+
+
 # [1.8.0](https://github.com/jfr992/terragrunt-skill/compare/v1.7.0...v1.8.0) (2026-07-07)
 
 
@@ -43,20 +66,6 @@
 
 
 ## [1.5.1](https://github.com/jfr992/terragrunt-skill/compare/v1.5.0...v1.5.1) (2026-04-06)
-
-
-
-# [1.5.0](https://github.com/jfr992/terragrunt-skill/compare/v1.3.0...v1.5.0) (2026-03-02)
-
-
-### Bug Fixes
-
-* align SKILL.md name with marketplace.json plugin name ([80a4c9d](https://github.com/jfr992/terragrunt-skill/commit/80a4c9dc51ecfeffb2c64207da8de7309f4dc44f))
-
-
-### Features
-
-* refactor SKILL.md to navigation hub with progressive disclosure ([8ce8c02](https://github.com/jfr992/terragrunt-skill/commit/8ce8c02425f2cc3953167a326d0e0b36ed63a40e))
 
 
 
