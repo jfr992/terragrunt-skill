@@ -246,7 +246,7 @@ test-output/
 
 ## Contributing
 
-See [CLAUDE.md](CLAUDE.md) for contributor guidelines and repository architecture.
+See [AGENTS.md](AGENTS.md) for contributor guidelines and repository architecture.
 
 ## State Backend Bootstrap
 
