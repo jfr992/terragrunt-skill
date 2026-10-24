@@ -17,7 +17,7 @@
 
 ### S3 Backend (AWS)
 
-Recommended configuration in root.hcl (OpenTofu >= 1.10 — native S3 lockfile, no DynamoDB table needed):
+Recommended configuration in root.hcl (OpenTofu >= 1.10 or Terraform >= 1.11 — native S3 lockfile, no DynamoDB table needed; Terragrunt >= 0.82.4 handles it natively, older versions pass it through):
 
 ```hcl
 remote_state {
@@ -42,7 +42,7 @@ remote_state {
 
 Key settings:
 - **encrypt = true** - Enable server-side encryption
-- **use_lockfile = true** - Native S3 state locking (OpenTofu >= 1.10). No DynamoDB table to provision or pay for.
+- **use_lockfile = true** - Native S3 state locking (OpenTofu >= 1.10 / Terraform >= 1.11). No DynamoDB table to provision or pay for.
 - **path_relative_to_include()** - Unique key per unit
 - **role_arn** - Cross-account access
 
@@ -148,7 +148,7 @@ Terragrunt natively provisions backend resources from the `remote_state` block �
 terragrunt backend bootstrap
 
 # Bootstrap everything discovered under the current directory
-terragrunt run --all -- backend bootstrap
+terragrunt backend bootstrap --all
 
 # Migrate state between backends after editing remote_state config
 terragrunt backend migrate
@@ -157,7 +157,7 @@ terragrunt backend migrate
 terragrunt backend delete
 ```
 
-The bucket is created with versioning, server-side encryption, public access blocked, and a TLS-enforced policy. By default Terragrunt also auto-bootstraps on first `init`/`plan` when the backend doesn't exist; `backend bootstrap` makes it explicit, which is preferable in CI (least-privilege pipelines can run it once with elevated rights, then drop them).
+The bucket is created with versioning, server-side encryption, public access blocked, and a TLS-enforced policy. Do not use `run --all -- backend bootstrap`, because everything after `--` goes to OpenTofu/Terraform. Automatic provisioning on first `init`/`plan` was the default before 0.78. It became opt-in (`--backend-bootstrap`) in 0.78.0 and was removed in 0.87.0, so Terragrunt now errors when the backend is missing. Explicit `backend bootstrap` (0.77+) is the way, and it is preferable in CI (least-privilege pipelines can run it once with elevated rights, then drop them).
 
 
 ### 1.2 bootstrap change: no bucket root-access statement

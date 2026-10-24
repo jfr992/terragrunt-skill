@@ -8,6 +8,8 @@ on:
       - 'evaluations/**'
       - '.github/workflows/**'
       - '.claude-plugin/**'
+      - 'README.md'
+      - 'AGENTS.md'
   push:
     branches: [master, main]
     paths:
@@ -16,6 +18,8 @@ on:
       - 'evaluations/**'
       - '.github/workflows/**'
       - '.claude-plugin/**'
+      - 'README.md'
+      - 'AGENTS.md'
   workflow_dispatch:
 
 jobs:

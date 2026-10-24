@@ -1,6 +1,6 @@
 # Terragrunt Agent Skill
 
-An agent skill providing best practices guidance for Terragrunt infrastructure-as-code with OpenTofu/Terraform. It follows the open Agent Skills spec (https://agentskills.io/specification), so it works with any compatible agent (Claude Code, Codex, Cursor, Gemini CLI, …).
+An agent skill providing best practices guidance for Terragrunt (0.68 to 1.2) infrastructure-as-code with OpenTofu or Terraform. Version differences are covered in [version-compatibility.md](skills/terragrunt-skill/references/version-compatibility.md). It follows the open Agent Skills spec (https://agentskills.io/specification), so it works with any compatible agent (Claude Code, Codex, Cursor, Gemini CLI, …).
 
 ## Architecture
 
@@ -183,7 +183,7 @@ terragrunt stack run apply --filter '.terragrunt-stack/dynamodb'
 terragrunt stack run apply --filter '.terragrunt-stack/lambda...'
 ```
 
-See [Terragrunt Filters](https://terragrunt.gruntwork.io/docs/features/filter/) for advanced filtering options.
+See [Terragrunt Filters](https://terragrunt.gruntwork.io/docs/features/filter/) for advanced filtering options. Stacks need Terragrunt 0.78+ and `--filter` needs 0.97+; on older versions use `run-all` with `--terragrunt-include-dir`.
 
 ## Usage
 
@@ -237,11 +237,12 @@ test-output/
 | `skills/terragrunt-skill/references/performance.md` | Caching, benchmarking, optimization |
 | `skills/terragrunt-skill/references/state-management.md` | S3/DynamoDB backend patterns |
 | `skills/terragrunt-skill/references/multi-account.md` | Cross-account deployment patterns |
+| `skills/terragrunt-skill/references/version-compatibility.md` | Terragrunt 0.68→1.2 feature matrix, CLI mapping, OpenTofu vs Terraform |
 
 ## Compatibility
 
-- Terragrunt 0.68+
-- OpenTofu 1.6+ / Terraform 1.5+
+- Terragrunt 0.68+ (examples target 1.2; explicit stacks need 0.78+, `autoinclude` 1.1+, `expansion` 1.2+, `--filter` 0.97+). See [version-compatibility.md](skills/terragrunt-skill/references/version-compatibility.md).
+- OpenTofu 1.6+ / Terraform 1.5+ (S3 `use_lockfile`: OpenTofu 1.10+ / Terraform 1.11+; state encryption is OpenTofu-only)
 - AWS, GCP (authentication patterns)
 
 ## Contributing
@@ -250,7 +251,7 @@ See [AGENTS.md](AGENTS.md) for contributor guidelines and repository architectur
 
 ## State Backend Bootstrap
 
-Terragrunt can automatically create state backend resources (S3 bucket with native lockfile) when you run any command:
+Terragrunt creates state backend resources (S3 bucket, plus DynamoDB table if configured) from the `remote_state` block:
 
 ```hcl
 # root.hcl
@@ -270,7 +271,7 @@ remote_state {
 }
 ```
 
-Terragrunt automatically provisions the S3 bucket (with versioning, encryption, access logging) if it doesn't exist. Native S3 lockfile (OpenTofu >= 1.10) replaces the need for a DynamoDB lock table.
+Run `terragrunt backend bootstrap --all` (Terragrunt 0.77+) or pass `--backend-bootstrap` to create the bucket (with versioning, encryption, access logging). Automatic provisioning was the default before 0.78, became opt-in in 0.78.0, and was removed in 0.87.0: Terragrunt now exits with an error instead. Native S3 lockfile (OpenTofu >= 1.10 / Terraform >= 1.11) replaces the need for a DynamoDB lock table.
 
 See [State Backend](https://terragrunt.gruntwork.io/docs/features/state-backend/) for details.
 

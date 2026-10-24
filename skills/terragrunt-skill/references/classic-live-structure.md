@@ -198,10 +198,10 @@ The directory you run from defines the implicit stack:
 cd non-prod/us-east-1/qa/mysql && terragrunt apply
 
 # Whole environment, dependency-ordered
-cd non-prod/us-east-1/qa && terragrunt run --all apply
+cd non-prod/us-east-1/qa && terragrunt run --all -- apply
 
 # Whole account
-cd non-prod && terragrunt run --all plan
+cd non-prod && terragrunt run --all -- plan
 
 # Explore an unfamiliar repo first (see discovery-commands.md)
 terragrunt find --dag --dependencies

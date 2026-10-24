@@ -1,6 +1,6 @@
 # Discovery Commands
 
-> `find`/`list` require the TG >= 0.77.22 CLI. `--filter` **requires TG >= 0.97** (experiment since 0.91.2). See [version-compatibility.md](version-compatibility.md).
+> `find`/`list` require the TG >= 0.77.22 CLI. `--filter` **requires TG >= 0.97** (experiment since 0.91.2); read-based change filtering requires TG >= 1.1. See [version-compatibility.md](version-compatibility.md).
 
 First commands to run when exploring an unfamiliar Terragrunt repo — before globbing for `terragrunt.hcl` files manually.
 

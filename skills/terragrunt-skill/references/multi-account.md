@@ -196,5 +196,5 @@ Use `run --all` with dependency ordering:
 
 ```bash
 cd infrastructure-live
-terragrunt run --all apply
+terragrunt run --all -- apply
 ```

@@ -47,7 +47,7 @@ See [cas.md](cas.md) for how it works, `update_source_with_cas` for self-contain
 
 ## Provider Cache Server (Terraform / tofu < 1.10 / shared CI cache)
 
-For environments not yet on OpenTofu >= 1.10, Terragrunt's built-in provider cache server provides effective optimization:
+For Terraform, or OpenTofu < 1.10, Terragrunt's built-in provider cache server provides effective optimization:
 
 ```bash
 terragrunt run --all --provider-cache -- plan
