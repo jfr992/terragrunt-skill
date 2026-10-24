@@ -5,6 +5,7 @@
 - AWS Authentication Pattern
 - GCP Authentication Pattern
 - Targeting Specific Units
+- Implicit Stacks and Older Terragrunt
 - References
 
 > **Best Practice: Reusable Templates**
@@ -410,6 +411,34 @@ gcp:dev:dynamodb:apply:
 > ```
 
 ---
+
+## Implicit Stacks and Older Terragrunt
+
+The templates above assume explicit stacks on 1.x (`TG_*` variables need 0.78+; 0.68–0.7x reads `TERRAGRUNT_*`). For a unit tree without `terragrunt.stack.hcl`, swap the script; full matrix in [cicd-pipelines.md](cicd-pipelines.md#layouts-and-versions-matrix).
+
+```yaml
+.terragrunt_implicit_plan:        # 0.78+ / 1.x
+  stage: plan
+  variables:
+    TG_NON_INTERACTIVE: "true"
+  rules:
+    - changes: ["$TG_LIVE_PATH/**/*.hcl"]
+  script:
+    - cd $TG_LIVE_PATH
+    - terragrunt run --all --parallelism ${TG_PARALLELISM} --filter "[origin/${CI_DEFAULT_BRANCH}...HEAD]" -- plan   # 0.78–0.96: --queue-include-dir <dir> instead
+
+.terragrunt_implicit_plan_068:    # 0.68–0.7x
+  stage: plan
+  variables:
+    TERRAGRUNT_NON_INTERACTIVE: "true"
+  rules:
+    - changes: ["$TG_LIVE_PATH/**/*.hcl"]
+  script:
+    - cd $TG_LIVE_PATH
+    - terragrunt run-all plan --terragrunt-parallelism ${TG_PARALLELISM} ${TG_TARGET_UNIT:+--terragrunt-include-dir "$TG_TARGET_UNIT"}   # "." matches nothing on 0.68
+```
+
+Use a depth of `GIT_DEPTH: 0` (or fetch the default branch) so the git filter and `git diff` can see the base ref.
 
 ## References
 

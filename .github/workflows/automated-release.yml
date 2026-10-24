@@ -76,6 +76,15 @@ jobs:
               f.write("\n")
           print(f"plugin.json updated to {version}")
 
+          # Root portable plugin.json (Codex / Agent Plugins)
+          with open("plugin.json", "r") as f:
+              root_plugin = json.load(f)
+          root_plugin["version"] = version
+          with open("plugin.json", "w") as f:
+              json.dump(root_plugin, f, indent=2)
+              f.write("\n")
+          print(f"root plugin.json updated to {version}")
+
           # Update metadata.version in SKILL.md frontmatter
           import re
           skill = "skills/terragrunt-skill/SKILL.md"

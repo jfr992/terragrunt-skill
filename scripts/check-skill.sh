@@ -19,6 +19,16 @@ m=json.load(open(sys.argv[1])); p=json.load(open(sys.argv[2]))
 print("marketplace.metadata\t"+m["metadata"]["description"])
 for x in m["plugins"]: print("marketplace.plugin\t"+x["description"])
 print("plugin.json\t"+p["description"])
+r=json.load(open("plugin.json")); print("root.plugin.json\t"+r["description"])
+print("root.plugin.json.interface\t"+r["extensions"]["com.openai"]["interface"]["shortDescription"])
+cm=json.load(open(".agents/plugins/marketplace.json"))
+names=[x["name"] for x in cm["plugins"]]
+assert r["name"] in names and p["name"]==r["name"], "plugin names differ across manifests"
+for x in cm["plugins"]:
+  assert x["source"]["path"].startswith("./"), "codex source.path must start with ./"
+  assert {"installation","authentication"} <= set(x.get("policy",{})) and x.get("category"), "codex entry needs policy.installation/authentication + category"
+vs={m["version"],p["version"],r["version"]}|{x["version"] for x in m["plugins"]}
+assert len(vs)==1, f"manifest versions differ: {vs}"
 PY
 )
 descs+=$'\n'"SKILL.md"$'\t'"$(tr '\n' ' ' <<<"$desc")"$'\n'"SKILL.md.compat"$'\t'"$(grep -m1 '^compatibility:' "$S")"$'\n'"openai.yaml"$'\t'"$(grep -E 'short_description|default_prompt' $R/agents/openai.yaml | tr '\n' ' ')"
@@ -33,7 +43,7 @@ done <<<"$descs"
 grep -q 'Terragrunt 0\.68+' README.md || { echo "FAIL README compatibility lacks Terragrunt 0.68+"; vfail=1; }
 grep -q 'version-compatibility.md' AGENTS.md || { echo "FAIL AGENTS.md does not list version-compatibility.md"; vfail=1; }
 # stale scope claims anywhere user-facing (CHANGELOG is historical)
-if grep -rnE 'Terragrunt \(?>= ?1\.2\)?|Terragrunt 1\.x only' README.md AGENTS.md .claude-plugin "$R" evaluations; then echo "FAIL stale '>= 1.2' scope claim"; vfail=1; fi
+if grep -rnE 'Terragrunt \(?>= ?1\.2\)?|Terragrunt 1\.x only' README.md AGENTS.md .claude-plugin .agents plugin.json "$R" evaluations; then echo "FAIL stale '>= 1.2' scope claim"; vfail=1; fi
 # Terragrunt flags must not be forwarded after `--`
 if grep -rnE 'run --all -- backend|run --all -- [a-z]+ .*--(provider-cache|filter|non-interactive|backend-bootstrap)' "$R" "$S" README.md | grep -v 'Do not use'; then echo "FAIL Terragrunt flag/command after --"; vfail=1; fi
 # auto-provisioning was removed in 0.87

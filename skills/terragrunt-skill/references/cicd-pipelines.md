@@ -2,6 +2,7 @@
 
 ## Contents
 - Overview
+- Layouts and Versions Matrix
 - Terragrunt Stack Commands
 - Run Reports and Strict Mode in CI
 - Platform Pipelines
@@ -10,7 +11,7 @@
 
 ## Overview
 
-This guide provides CI/CD pipeline templates for **Terragrunt Stacks** (explicit stacks using `terragrunt.stack.hcl`). These templates are suggestions that can be adapted to your organization's needs.
+This guide covers both layouts: **explicit stacks** (`terragrunt.stack.hcl` + `stack run`) and **implicit stacks** (a tree of unit dirs run with `run --all`, or `run-all` on 0.68–0.7x). The detailed GitLab templates use explicit stacks on 1.x; the matrix below gives the equivalent commands for implicit stacks and older Terragrunt. Templates are suggestions that can be adapted to your organization's needs.
 
 **Key features:**
 - `terragrunt stack run` commands for explicit stacks
@@ -24,6 +25,37 @@ This guide provides CI/CD pipeline templates for **Terragrunt Stacks** (explicit
 > - **Enhanced security**: SSH keys provide stronger authentication than passwords or tokens
 > - **Credential-free operations**: Once configured, no credentials needed for each Git operation
 > - **No token expiration**: Unlike HTTPS tokens, SSH keys don't expire unexpectedly mid-pipeline
+
+---
+
+## Layouts and Versions Matrix
+
+Detect the version first (`terragrunt --version`, see [version-compatibility.md](version-compatibility.md)) and pick the row. Flags/env verified against 0.68.0, 0.78.0 and 1.2.1.
+
+| | 0.68–0.7x | 0.78–0.96 | 0.97+ / 1.x |
+|---|---|---|---|
+| Implicit: plan all | `terragrunt run-all plan --terragrunt-non-interactive` | `terragrunt run --all --non-interactive -- plan` | same as 0.78+ |
+| Implicit: subset | `--terragrunt-include-dir <dir>` (+ `--terragrunt-strict-include`) | `--queue-include-dir <dir>` (+ `--queue-strict-include`) | `--filter './<dir>'` (`--queue-include-dir` still works) |
+| Explicit: plan all | not available — use implicit | `terragrunt stack run --non-interactive -- plan` | same |
+| Explicit: one unit | — | `--queue-include-dir "$PWD/.terragrunt-stack/<unit>"` (**absolute path**; a relative one silently matches nothing on 0.78) | `--filter './.terragrunt-stack/<unit>'` |
+| Env var prefix | `TERRAGRUNT_*` (e.g. `TERRAGRUNT_NON_INTERACTIVE`, `TERRAGRUNT_TFPATH`, `TERRAGRUNT_INCLUDE_DIR`) | `TG_*` (e.g. `TG_NON_INTERACTIVE`, `TG_TF_PATH`) | `TG_*` (`TERRAGRUNT_*` still read on 1.2 but deprecated) |
+| Change detection | CI path rules + `git diff` → `--terragrunt-include-dir` per changed dir | CI path rules + `git diff` → `--queue-include-dir` | Git filter `--filter '[origin/main...HEAD]'` (worktree diff), or path rules |
+
+`--terragrunt-*` flags were removed in 0.85 and `run-all` is gone by 1.0, so pin the binary version in the CI image and keep one row per pipeline.
+
+**Change detection.** Explicit stacks: trigger on the stack file *and* the catalog it sources (`live/<env>/terragrunt.stack.hcl`, `catalog/**`), then plan the whole stack — generated `.terragrunt-stack/` is not in git. Implicit stacks: trigger on the unit dirs (`live/<env>/**/terragrunt.hcl`, `live/**/*.hcl`) and narrow the run:
+
+```bash
+# 0.97+/1.x: Terragrunt diffs the refs itself (checks out worktrees)
+terragrunt run --all --non-interactive --filter "[origin/${BASE_REF:-main}...HEAD]" -- plan
+
+# 0.68–0.96: build include flags from git diff (use --terragrunt-include-dir on 0.68)
+INCLUDES=$(git diff --name-only "origin/${BASE_REF:-main}...HEAD" -- 'live/**/terragrunt.hcl' \
+  | xargs -r -n1 dirname | sort -u | sed 's/^/--queue-include-dir /')
+[ -n "$INCLUDES" ] && terragrunt run --all --non-interactive $INCLUDES -- plan
+```
+
+Include-dir runs also pull in the units' dependencies; add `--queue-strict-include` (0.68: `--terragrunt-strict-include`) to run only the listed dirs. Changes to a shared `root.hcl`/`_envcommon` affect every unit: plan everything when those paths change.
 
 ---
 
