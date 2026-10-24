@@ -1,5 +1,7 @@
 # Unit Interdependencies
 
+> `dependency` blocks work on every TG >= 0.68. **`autoinclude` and `unit.<n>.path` require TG >= 1.1**, and reading outputs from state by default requires TG >= 1.2. See [version-compatibility.md](version-compatibility.md).
+
 Units within a stack can depend on each other, creating a DAG (Directed Acyclic Graph) of resources.
 
 ## Contents

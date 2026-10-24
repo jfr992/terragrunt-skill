@@ -1,5 +1,7 @@
 # Expansion (`for_each` / `count`) and `enabled` (Terragrunt 1.2+)
 
+> **Requires TG >= 1.2.** Older versions: see [version-compatibility.md](version-compatibility.md).
+
 ## Contents
 - When to use
 - Unit/stack expansion

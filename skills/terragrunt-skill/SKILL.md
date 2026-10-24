@@ -1,14 +1,14 @@
 ---
 name: terragrunt-skill
 description: >-
-  Use for Terragrunt (>= 1.2) work: building an infrastructure catalog, explicit stacks (terragrunt.stack.hcl),
+  Use for Terragrunt work (0.68 to 1.2; OpenTofu or Terraform): building an infrastructure catalog, explicit stacks (terragrunt.stack.hcl),
   units wrapping OpenTofu/Terraform modules, live repos with a root.hcl hierarchy, remote state and locking (S3
   lockfile, DynamoDB, GCS, azurerm), multi-account/multi-env with role assumption, classic Gruntwork live repos
   (_envcommon), migrating a terralith, exploring repos (find, list, dag), wiring dependencies (autoinclude,
   values), expansion blocks (for_each/count), the Content Addressable Store (CAS), OCI and versioned module
   sources, upgrading to 1.2, and CI/CD pipelines (GitHub Actions, GitLab).
 license: Apache-2.0
-compatibility: Terragrunt >= 1.2 with OpenTofu >= 1.10 recommended (Terraform supported). Agent-agnostic.
+compatibility: Terragrunt >= 0.68 (1.2 recommended); OpenTofu or Terraform. Version-specific guidance in references/version-compatibility.md. Agent-agnostic.
 metadata:
   version: "2.0.0"
   terragrunt: "1.2"
@@ -25,6 +25,10 @@ This skill provides guidance for infrastructure using Terragrunt with OpenTofu, 
 2. **Infrastructure Live** - Environment-specific deployments consuming the catalog
 3. **Module Repos** - Separate repositories for each OpenTofu module (independent versioning)
 
+## Step 0: Detect Versions
+
+Before giving commands, check `terragrunt --version`, `.terragrunt-version`, `mise.toml`/`.tool-versions`, `terragrunt_version_constraint` in `root.hcl`, and whether `tofu` or `terraform` is installed. This skill defaults to **TG 1.2 + OpenTofu ≥ 1.10**. For older Terragrunt (0.68+), Terraform, or classic layouts, follow [version-compatibility.md](references/version-compatibility.md): use `run-all`/`--terragrunt-*` on < 0.77.22, classic layouts on < 0.78, no `autoinclude` on < 1.1, no `expansion` on < 1.2, and no state encryption on Terraform.
+
 ## Choosing an Architecture
 
 **Default recommendation: explicit stacks** — the catalog + `terragrunt.stack.hcl` + values pattern this skill teaches. Units are generated from stack files; configuration flows through `values`; no per-unit boilerplate.
@@ -39,6 +43,7 @@ Migrating classic → stacks: follow the official [Terralith to Terragrunt guide
 
 | Topic | Reference |
 |-------|-----------|
+| Version compatibility (TG 0.68→1.2, OpenTofu vs Terraform) | [version-compatibility.md](references/version-compatibility.md) |
 | Naming conventions | [naming.md](references/naming.md) |
 | Catalog structure | [catalog-structure.md](references/catalog-structure.md) |
 | Live repo structure | [live-structure.md](references/live-structure.md) |
