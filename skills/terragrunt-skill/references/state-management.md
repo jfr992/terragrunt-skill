@@ -1,5 +1,7 @@
 # State Management Best Practices
 
+> Native S3 `use_lockfile` **requires TG >= 0.82.4 and OpenTofu >= 1.10 or Terraform >= 1.11**. `encryption` is OpenTofu-only (>= 1.7, TG >= 0.72.2). See [version-compatibility.md](version-compatibility.md).
+
 ## Contents
 - Remote State Configuration
 - State Isolation

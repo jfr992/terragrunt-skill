@@ -1,5 +1,7 @@
 # Stack Commands
 
+> **Requires TG >= 0.78** (explicit stacks GA). On older versions, use classic `run-all`. See [version-compatibility.md](version-compatibility.md).
+
 ## Contents
 - Basic Operations
 - Targeting Specific Units

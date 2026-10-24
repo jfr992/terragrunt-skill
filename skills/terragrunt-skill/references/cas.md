@@ -1,5 +1,7 @@
 # Content Addressable Store (CAS)
 
+> **Requires TG >= 1.1** for GA/default-on (experiment since 0.75.5). See [version-compatibility.md](version-compatibility.md).
+
 The CAS stores fetched source code addressed by content hash, so the same content is downloaded and stored once no matter how many units reference it. Generally available and **enabled by default** since Terragrunt 1.1 — faster clones and less disk usage with no configuration.
 
 ## Contents
