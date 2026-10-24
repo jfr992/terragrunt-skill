@@ -30,9 +30,10 @@ This skill uses **progressive disclosure** to minimize token usage:
   - `performance.md`: Provider caching, benchmarking tools, and optimization
   - `root-config.md`: Root.hcl configuration and locals setup
   - `stack-commands.md`: Stack generation and execution commands
-  - `state-management.md`: State backend configuration: native S3 lockfile (OpenTofu >= 1.10) and legacy DynamoDB patterns
-- **scripts/check-skill.sh**: Skill lint (description length, line count, stale experiment flags, broken reference links)
-- **.claude-plugin/**: Claude Code marketplace distribution configuration (kept for Claude users)
+  - `state-management.md`: State backend configuration: native S3 lockfile (OpenTofu >= 1.10 / Terraform >= 1.11) and legacy DynamoDB patterns
+  - `version-compatibility.md`: Terragrunt 0.68→1.2 feature matrix, old→new CLI mapping, OpenTofu vs Terraform
+- **scripts/check-skill.sh**: Skill lint (description length, line count, stale experiment flags, broken reference links, stale `>= 1.2` version claims, version scope consistent across SKILL.md and the manifests)
+- **.claude-plugin/**: Claude Code marketplace distribution configuration (kept for Claude Code users; the skill itself is agent-agnostic)
 - **.github/workflows/**: CI/CD for validation and automated releases
 
 ## Content Philosophy

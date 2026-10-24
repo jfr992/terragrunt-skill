@@ -45,7 +45,8 @@ If `tofu` and `terraform` are both present, Terragrunt prefers `tofu` unless `--
 | `terragrunt.stack.hcl` / `stack generate` | 0.71.3 (experiment), **0.78.0** (GA) | Requires TG ≥ 0.78 without `--experiment stacks`. |
 | `stack run`, `stack output` | 0.72.x (experiment) | *UNVERIFIED* exact first version; GA with stacks in 0.78.0. |
 | `run --all`, `TG_*` vars, prefix-less flags | 0.73.0 (experiment) / **0.77.22** (GA) | `TERRAGRUNT_*` env vars still accepted in 1.2.1 (tested). |
-| `backend bootstrap` command | ~0.77 (CLI redesign) | *UNVERIFIED* exact version; before that, rely on auto-create of the S3/GCS bucket on `init`. |
+| `backend bootstrap` command | **0.77.0** | Before it, the S3/GCS bucket was created automatically on `init`. |
+| Automatic backend provisioning | ≤ 0.77 default; **0.78.0** opt-in (`--backend-bootstrap`); **removed 0.87.0** | From 0.87, Terragrunt exits with an error if the backend is missing. Run `backend bootstrap --all` first. |
 | `remote_state.encryption` (OpenTofu state encryption) | **0.72.2** | OpenTofu-only (≥ 1.7). |
 | CAS (`update_source_with_cas`, content-addressed store) | 0.75.5 (experiment), **1.1.0** (GA) | |
 | Native `use_lockfile` in `remote_state` S3 | **0.82.4** | Earlier TG passes the key through: TG 0.68.0 + OpenTofu 1.10.6 planned fine with `use_lockfile = true` on Floci (tested). Needs a supporting IaC version (below). |
@@ -59,9 +60,9 @@ If `tofu` and `terraform` are both present, Terragrunt prefers `tofu` unless `--
 
 | Old (≤ 0.77, removed or deprecated) | New (≥ 0.77.22) | Removed in |
 |------------------------------------|-----------------|-----------|
-| `terragrunt run-all plan` | `terragrunt run --all plan` (or `terragrunt plan --all`) | gone by 1.0.0 |
+| `terragrunt run-all plan` | `terragrunt run --all -- plan` (or `terragrunt plan --all`) | gone by 1.0.0 |
 | `plan-all` / `apply-all` / `destroy-all` / `output-all` / `validate-all` | `run --all <cmd>` | 0.84.0 |
-| `spin-up` / `tear-down` | `run --all apply` / `run --all destroy` | 0.84.0 |
+| `spin-up` / `tear-down` | `run --all -- apply` / `run --all -- destroy` | 0.84.0 |
 | `terragrunt workspace list` (default command forwarding) | `terragrunt run -- workspace list` | gone by 1.0 (1.2.1: `unknown command`) |
 | `hclfmt` | `hcl fmt` | deprecated 0.78.0 |
 | `hclvalidate` / `validate-inputs` | `hcl validate` / `hcl validate --inputs [--strict]` | deprecated 0.78.0 |
@@ -101,6 +102,6 @@ Pin the IaC version with `terraform_version_constraint` and Terragrunt with `ter
 
 ## Verification notes
 
-- Versions above come from GitHub release notes (fetched 2026-10-24): 0.71.3, 0.72.2, 0.73.0, 0.75.5, 0.77.22, 0.78.0, 0.82.4, 0.84.0, 0.85.0, 0.91.2, 0.97.0, 1.0.0, 1.0.1, 1.1.0, 1.1.3 and 1.2.0.
+- Versions above come from GitHub release notes (fetched 2026-10-24): 0.71.3, 0.72.2, 0.73.0, 0.75.5, 0.77.0, 0.77.22, 0.78.0, 0.82.4, 0.84.0, 0.85.0, 0.87.0, 0.91.2, 0.97.0, 1.0.0, 1.0.1, 1.1.0, 1.1.3 and 1.2.0.
 - Local tests: Terragrunt 0.68.0, 0.78.1, 1.0.0 and 1.2.1 with OpenTofu 1.10.6 on a Floci S3 backend.
 - Old TG (aws-sdk v1, e.g. 0.68) ignores `endpoints = { s3 = … }`. For S3-compatible or local endpoints, use `endpoint = "…"` + `force_path_style = true`, or the bucket checks go to real AWS.
