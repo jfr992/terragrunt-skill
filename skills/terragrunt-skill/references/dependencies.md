@@ -276,13 +276,13 @@ When applying a single unit that has dependencies, the dependencies must already
 
 ```bash
 # First apply the base unit
-terragrunt stack run apply --filter '.terragrunt-stack/eks'
+terragrunt stack run --filter './.terragrunt-stack/eks' -- apply
 
 # Then apply dependent units (eks must be applied first)
-terragrunt stack run apply --filter '.terragrunt-stack/karpenter'
+terragrunt stack run --filter './.terragrunt-stack/karpenter' -- apply
 
 # Or apply a unit and all its dependencies
-terragrunt stack run apply --filter '.terragrunt-stack/karpenter...'
+terragrunt stack run --filter './.terragrunt-stack/karpenter...' -- apply
 ```
 
 ## Best Practices

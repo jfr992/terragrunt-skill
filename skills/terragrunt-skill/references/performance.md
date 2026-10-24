@@ -19,16 +19,14 @@
 
 Terragrunt operations can be significantly accelerated through proper caching and configuration. With provider caching enabled, you can achieve:
 
-- **Cold cache:** 42% faster (1.73x speedup)
-- **Warm cache:** 51% faster (2.07x speedup)
-
-For a 10-person team running 35 Terragrunt operations daily, this translates to approximately 35 hours saved monthly.
+- On TG >= 0.89 with OpenTofu >= 1.10, provider caching is automatic; measure before adding anything else.
+- Earlier headline numbers (1.73x cold / 2.07x warm) came from a 0.86 setup and were not reproduced by the re-run below; don't quote them.
 
 ## Easy Wins
 
 ## Provider Caching (OpenTofu >= 1.10: automatic)
 
-With OpenTofu >= 1.10, Terragrunt **automatically** sets `TF_PLUGIN_CACHE_DIR` per run — no flags needed. On by default since **0.89** (0.86 needs `TG_EXPERIMENT=auto-provider-cache-dir`; 0.68 has no equivalent — use the cache server, see [Older Versions](#older-versions-068--086)).
+With OpenTofu >= 1.10, Terragrunt **automatically** sets `TF_PLUGIN_CACHE_DIR` per run — no flags needed. On by default since **0.89.0** (0.82.3–0.88 need `--experiment auto-provider-cache-dir` / `TG_EXPERIMENT=auto-provider-cache-dir`; 0.68 has no equivalent — use the cache server, see [Older Versions](#older-versions-068--086)).
 
 ```bash
 # Override the cache location if needed
@@ -144,7 +142,7 @@ terragrunt run-all plan --terragrunt-non-interactive
 # Commit .terraform.lock.hcl per unit so fresh checkouts hit the cache
 ```
 
-On 0.86 use the `TG_*` names, or `TG_EXPERIMENT=auto-provider-cache-dir` (OpenTofu >= 1.10). On 0.89+ do nothing — auto provider cache dir is default. A network mirror (boring-registry) only replaces the upstream registry; it does not avoid per-unit provider installs, so it helps only on a slow/blocked internet link.
+On 0.82.3–0.88 use the `TG_*` names, or `TG_EXPERIMENT=auto-provider-cache-dir` (OpenTofu >= 1.10). On 0.89+ do nothing — auto provider cache dir is default. A network mirror (boring-registry) only replaces the upstream registry; it does not avoid per-unit provider installs, so it helps only on a slow/blocked internet link.
 
 ### Benchmark: terragrunt-cache-test re-run (this PR, 2026-10-24)
 
@@ -214,8 +212,12 @@ hyperfine -w 3 -r 5 \
 ### Cold vs Warm Cache Testing
 
 ```bash
-# Clear caches for cold-start testing
+# Clear caches for cold-start testing. Also clear the global cache used by the
+# auto provider cache dir and CAS: ${XDG_CACHE_HOME:-~/.cache}/terragrunt/{providers,cas}
+# (TG >= 1.0.4 honors XDG_CACHE_HOME; older versions always use ~/.cache/terragrunt).
+# Easiest: point XDG_CACHE_HOME at a scratch dir per benchmark and delete it in hyperfine --prepare.
 : "${TG_PROVIDER_CACHE_DIR:?}" "${TG_DOWNLOAD_DIR:?}"; rm -rf -- "${TG_PROVIDER_CACHE_DIR:?}"/* "${TG_DOWNLOAD_DIR:?}"/*
+find . -name .terragrunt-cache -prune -exec rm -rf {} +
 
 # Run and measure
 time terragrunt run --all --provider-cache -- plan
@@ -253,6 +255,8 @@ jobs:
   plan:
     runs-on: ubuntu-latest
     env:
+      # TG >= 0.89 + OpenTofu >= 1.10: drop TG_PROVIDER_CACHE/--provider-cache; the auto
+      # provider cache dir already uses TG_PROVIDER_CACHE_DIR. Keep the server for Terraform.
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/provider-cache
       TG_DOWNLOAD_DIR: /tmp/module-cache
@@ -262,7 +266,7 @@ jobs:
           path: |
             /tmp/provider-cache
             /tmp/module-cache
-          key: terragrunt-cache-${{ hashFiles('**/*.hcl') }}
+          key: terragrunt-cache-${{ hashFiles('**/.terraform.lock.hcl') }}
           restore-keys: |
             terragrunt-cache-
 
@@ -275,6 +279,7 @@ jobs:
 ```yaml
 .terragrunt-cache:
   variables:
+    # TG >= 0.89 + OpenTofu >= 1.10: drop TG_PROVIDER_CACHE/--provider-cache (see above).
     TG_PROVIDER_CACHE: "1"
     TG_PROVIDER_CACHE_DIR: /cache/providers
     TG_DOWNLOAD_DIR: /cache/modules
