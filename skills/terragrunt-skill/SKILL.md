@@ -1,18 +1,18 @@
 ---
 name: terragrunt-skill
-description: |
-  Use this skill when working with Terragrunt infrastructure configurations. Triggers include:
-  - Setting up a new Terragrunt infrastructure catalog from scratch
-  - Creating or managing Terragrunt stacks (terragrunt.stack.hcl)
-  - Creating units that wrap OpenTofu modules from separate repos
-  - Configuring live infrastructure repositories with root.hcl hierarchy
-  - Setting up remote state backends (S3 with native lockfile or DynamoDB locking)
-  - Multi-account/multi-environment deployments with cross-account role assumption
-  - Working with classic Gruntwork-style live repos (account/region/env hierarchy, _envcommon includes)
-  - Migrating a monolithic Terraform/OpenTofu repo (terralith) to Terragrunt
-  - Exploring or auditing an existing Terragrunt repository (find, list, dag graph)
-  - Wiring unit dependencies (values pattern or autoinclude blocks)
-  - Speeding up clones/fetches or making catalog stacks self-contained with the Content Addressable Store (CAS, update_source_with_cas)
+description: >-
+  Use for Terragrunt work (0.68 to 1.2; OpenTofu or Terraform): building an infrastructure catalog, explicit stacks (terragrunt.stack.hcl),
+  units wrapping OpenTofu/Terraform modules, live repos with a root.hcl hierarchy, remote state and locking (S3
+  lockfile, DynamoDB, GCS, azurerm), multi-account/multi-env with role assumption, classic Gruntwork live repos
+  (_envcommon), migrating a terralith, exploring repos (find, list, dag), wiring dependencies (autoinclude,
+  values), expansion blocks (for_each/count), the Content Addressable Store (CAS), OCI and versioned module
+  sources, upgrading to 1.2, and CI/CD pipelines (GitHub Actions, GitLab).
+license: Apache-2.0
+compatibility: Terragrunt >= 0.68 (1.2 recommended); OpenTofu or Terraform. Version-specific guidance in references/version-compatibility.md. Agent-agnostic.
+metadata:
+  version: "2.0.0"
+  terragrunt: ">=0.68 (target 1.2)"
+  author: jfr992
 ---
 
 # Terragrunt Infrastructure Skill
@@ -24,6 +24,10 @@ This skill provides guidance for infrastructure using Terragrunt with OpenTofu, 
 1. **Infrastructure Catalog** - Units and stacks that reference modules from separate repos
 2. **Infrastructure Live** - Environment-specific deployments consuming the catalog
 3. **Module Repos** - Separate repositories for each OpenTofu module (independent versioning)
+
+## Step 0: Detect Versions
+
+Before giving commands, check `terragrunt --version`, `.terragrunt-version`, `mise.toml`/`.tool-versions`, `terragrunt_version_constraint` in `root.hcl`, and whether `tofu` or `terraform` is installed. This skill defaults to **TG 1.2 + OpenTofu ≥ 1.10**. For older Terragrunt (0.68+), Terraform, or classic layouts, follow [version-compatibility.md](references/version-compatibility.md): use `run-all`/`--terragrunt-*` on < 0.77.22, classic layouts on < 0.78, no `autoinclude` on < 1.1, no `expansion` on < 1.2, and no state encryption on Terraform.
 
 ## Choosing an Architecture
 
@@ -39,6 +43,7 @@ Migrating classic → stacks: follow the official [Terralith to Terragrunt guide
 
 | Topic | Reference |
 |-------|-----------|
+| Version compatibility (TG 0.68→1.2, OpenTofu vs Terraform) | [version-compatibility.md](references/version-compatibility.md) |
 | Naming conventions | [naming.md](references/naming.md) |
 | Catalog structure | [catalog-structure.md](references/catalog-structure.md) |
 | Live repo structure | [live-structure.md](references/live-structure.md) |
@@ -47,6 +52,7 @@ Migrating classic → stacks: follow the official [Terralith to Terragrunt guide
 | Discovery commands (find/list/dag) | [discovery-commands.md](references/discovery-commands.md) |
 | Root/account/env configs | [root-config.md](references/root-config.md) |
 | Unit dependencies | [dependencies.md](references/dependencies.md) |
+| Expansion (for_each/count) | [expansion.md](references/expansion.md) |
 | Catalog scaffolding | [catalog-scaffolding.md](references/catalog-scaffolding.md) |
 | Stack commands | [stack-commands.md](references/stack-commands.md) |
 | Patterns & best practices | [patterns.md](references/patterns.md) |
@@ -72,9 +78,13 @@ inputs = {
 }
 ```
 
-### Reference Resolution
+### Dependency Wiring (autoinclude first)
 
-Units resolve symbolic references like `"../acm"` to dependency outputs:
+Since Terragrunt 1.1, declare dependencies in the stack file with `autoinclude` so catalog units stay dependency-agnostic. See [dependencies.md](references/dependencies.md) for the full pattern.
+
+### Reference Resolution (legacy)
+
+Older catalogs resolve symbolic references like `"../acm"` to dependency outputs inside the unit:
 
 ```hcl
 inputs = {
@@ -84,7 +94,7 @@ inputs = {
 }
 ```
 
-Terragrunt 1.1+ adds `autoinclude` blocks as an alternative — dependencies declared in the stack file, catalog units stay dependency-agnostic. See [dependencies.md](references/dependencies.md) for choosing between them.
+Keep it when maintaining an existing catalog; prefer `autoinclude` for new work.
 
 ### Module Sourcing
 
@@ -106,7 +116,7 @@ For catalog-internal references (units/stacks/modules in the same repo), Terragr
 2. Reference module via Git URL with `${values.version}`
 3. Use `values.xxx` for inputs
 4. Add dependencies with mock outputs
-5. Implement reference resolution for `"../unit"` patterns
+5. Wire dependencies via `autoinclude` in the stack (legacy: `"../unit"` reference resolution)
 
 ### Create New Stack
 
@@ -119,14 +129,14 @@ For catalog-internal references (units/stacks/modules in the same repo), Terragr
 
 1. Create environment directory structure
 2. Add `env.hcl` with `state_bucket_suffix`
-3. Run `terragrunt run --all -- backend bootstrap` to create state resources
-4. Add stack files referencing catalog
+3. Add stack files referencing catalog and run `terragrunt stack generate`
+4. Run `terragrunt backend bootstrap --all` to create state resources (or pass `--backend-bootstrap` on the first run). Do not use `run --all -- backend bootstrap`: everything after `--` goes to OpenTofu/Terraform.
 
 ## Best Practices
 
 1. **Pin module versions** - Use Git tags in `values.version`
 2. **Pin catalog versions** - Use refs in unit source URLs
-3. **Use reference resolution** - `"../unit"` → dependency outputs
+3. **Wire dependencies with autoinclude** - legacy `"../unit"` resolution only in existing catalogs
 4. **Provide mock outputs** - Enable plan/validate without dependencies
 5. **Auto-detect features** - `length(keys(try(values.X, {}))) > 0`
 6. **Override paths** - `try(values.X_path, "../default")`
@@ -138,6 +148,17 @@ For catalog-internal references (units/stacks/modules in the same repo), Terragr
 2. **Heredoc in ternary** - Wrap in parentheses: `condition ? (\n<<-EOF\n...\nEOF\n) : ""`
 3. **Missing mock outputs** - Always provide for plan/validate
 4. **Hardcoded paths** - Use local paths only for testing
+
+## Upgrading to 1.2
+
+1. **`base64gzip()` output changed** - may force resource replacement; `base64gzip_compat` exists as an experiment.
+2. **Generated files are read-only** - stored in CAS as links; set `mutable = true` on a `generate` block that must be edited (see [cas.md](references/cas.md)).
+3. **S3 bootstrap no longer adds a root-access bucket policy** - set `enable_bucket_root_access = true` if you relied on it.
+4. **Dependency outputs read from state by default** - S3/GCS/azurerm; encrypted state and other backends fall back to `output`; opt out with `--no-dependency-fetch-output-from-state` (see [performance.md](references/performance.md)).
+
+## Docs Lookup
+
+Prefer the Terragrunt docs MCP server `https://mcp.docs.terragrunt.com/mcp` (public beta) when available; otherwise https://docs.terragrunt.com.
 
 ## Version Management
 

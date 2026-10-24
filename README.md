@@ -1,6 +1,6 @@
-# Terragrunt Skill for Claude Code
+# Terragrunt Agent Skill
 
-A Claude Code skill providing best practices guidance for Terragrunt infrastructure-as-code with OpenTofu/Terraform.
+An agent skill providing best practices guidance for Terragrunt (0.68 to 1.2) infrastructure-as-code with OpenTofu or Terraform. Version differences are covered in [version-compatibility.md](skills/terragrunt-skill/references/version-compatibility.md). It follows the open Agent Skills spec (https://agentskills.io/specification), so it works with any compatible agent (Claude Code, Codex, Cursor, Gemini CLI, …).
 
 ## Architecture
 
@@ -91,21 +91,32 @@ A Claude Code skill providing best practices guidance for Terragrunt infrastruct
 
 ## Installation
 
-This skill is distributed via Claude Code marketplace using `.claude-plugin/marketplace.json`.
-
-### Claude Code (Recommended)
+The skill lives in `skills/terragrunt-skill/` (a standard Agent Skills directory: `SKILL.md` + `references/` + `assets/`).
 
 ```bash
+git clone https://github.com/jfr992/terragrunt-skill.git ~/src/terragrunt-skill
+# Codex, Cursor, Gemini CLI (shared user dir)
+mkdir -p ~/.agents/skills && ln -s ~/src/terragrunt-skill/skills/terragrunt-skill ~/.agents/skills/terragrunt-skill
+# Codex (plugin marketplace: .agents/plugins/marketplace.json + root plugin.json)
+codex plugin marketplace add jfr992/terragrunt-skill   # optionally --ref <tag>
+codex plugin add terragrunt-skill@jfr992
+# Claude Code (marketplace)
 /plugin marketplace add jfr992/terragrunt-skill
 /plugin install terragrunt-skill@jfr992
+# or Claude Code manual
+mkdir -p ~/.claude/skills && ln -s ~/src/terragrunt-skill/skills/terragrunt-skill ~/.claude/skills/terragrunt-skill
+# Per-repo (team): commit or symlink into <repo>/.agents/skills/terragrunt-skill
 ```
 
-### Manual Installation
+| Agent | Skill directories read |
+|-------|------------------------|
+| Codex | `.agents/skills`, `~/.agents/skills` (or the plugin marketplace via `.agents/plugins/marketplace.json`) |
+| Cursor | `.agents/skills`, `~/.agents/skills`, also `.cursor/skills`, `.claude/skills` |
+| Gemini CLI | `.agents/skills`, `~/.agents/skills`, also `.gemini/skills` |
+| Claude Code | `.claude/skills`, `~/.claude/skills` only (or the plugin marketplace via `.claude-plugin/marketplace.json`) |
+| GitHub Copilot, Goose, Amp | `.agents/skills` — reported, unverified |
 
-```bash
-# Clone to Claude skills directory
-git clone https://github.com/jfr992/terragrunt-skill.git ~/.claude/skills/terragrunt-skill
-```
+**Windows:** symlinks may need admin/developer mode — copy the `skills/terragrunt-skill` directory instead of `ln -s`.
 
 ### Verify Installation
 
@@ -114,14 +125,14 @@ After installation, try:
 "Create a Terragrunt stack for a serverless API with Lambda, DynamoDB, and S3"
 ```
 
-Claude will automatically use the skill when working with Terragrunt code.
+Your agent will automatically use the skill when working with Terragrunt code.
 
 ## Quick Start
 
 ### 1. Create a Catalog Repository
 
 ```bash
-# Ask Claude to scaffold a new catalog
+# Ask your agent to scaffold a new catalog
 "Create a new infrastructure catalog with units for S3, DynamoDB, and Lambda"
 ```
 
@@ -139,7 +150,7 @@ infrastructure-catalog/
 ### 2. Create a Live Repository
 
 ```bash
-# Ask Claude to scaffold a live repo
+# Ask your agent to scaffold a live repo
 "Create a live infrastructure repo for AWS with staging environment"
 ```
 
@@ -175,7 +186,7 @@ terragrunt stack run apply --filter '.terragrunt-stack/dynamodb'
 terragrunt stack run apply --filter '.terragrunt-stack/lambda...'
 ```
 
-See [Terragrunt Filters](https://terragrunt.gruntwork.io/docs/features/filter/) for advanced filtering options.
+See [Terragrunt Filters](https://terragrunt.gruntwork.io/docs/features/filter/) for advanced filtering options. Stacks need Terragrunt 0.78+ and `--filter` needs 0.97+; on older versions use `run-all` with `--terragrunt-include-dir`.
 
 ## Usage
 
@@ -229,20 +240,21 @@ test-output/
 | `skills/terragrunt-skill/references/performance.md` | Caching, benchmarking, optimization |
 | `skills/terragrunt-skill/references/state-management.md` | S3/DynamoDB backend patterns |
 | `skills/terragrunt-skill/references/multi-account.md` | Cross-account deployment patterns |
+| `skills/terragrunt-skill/references/version-compatibility.md` | Terragrunt 0.68→1.2 feature matrix, CLI mapping, OpenTofu vs Terraform |
 
 ## Compatibility
 
-- Terragrunt 0.68+
-- OpenTofu 1.6+ / Terraform 1.5+
+- Terragrunt 0.68+ (examples target 1.2; explicit stacks need 0.78+, `autoinclude` 1.1+, `expansion` 1.2+, `--filter` 0.97+). See [version-compatibility.md](skills/terragrunt-skill/references/version-compatibility.md).
+- OpenTofu 1.6+ / Terraform 1.5+ (S3 `use_lockfile`: OpenTofu 1.10+ / Terraform 1.11+; state encryption is OpenTofu-only)
 - AWS, GCP (authentication patterns)
 
 ## Contributing
 
-See [CLAUDE.md](CLAUDE.md) for contributor guidelines and repository architecture.
+See [AGENTS.md](AGENTS.md) for contributor guidelines and repository architecture.
 
 ## State Backend Bootstrap
 
-Terragrunt can automatically create state backend resources (S3 bucket with native lockfile) when you run any command:
+Terragrunt creates state backend resources (S3 bucket, plus DynamoDB table if configured) from the `remote_state` block:
 
 ```hcl
 # root.hcl
@@ -262,7 +274,7 @@ remote_state {
 }
 ```
 
-Terragrunt automatically provisions the S3 bucket (with versioning, encryption, access logging) if it doesn't exist. Native S3 lockfile (OpenTofu >= 1.10) replaces the need for a DynamoDB lock table.
+Run `terragrunt backend bootstrap --all` (Terragrunt 0.77+) or pass `--backend-bootstrap` to create the bucket (with versioning, encryption, access logging). Automatic provisioning was the default before 0.78, became opt-in in 0.78.0, and was removed in 0.87.0: Terragrunt now exits with an error instead. Native S3 lockfile (OpenTofu >= 1.10 / Terraform >= 1.11) replaces the need for a DynamoDB lock table.
 
 See [State Backend](https://terragrunt.gruntwork.io/docs/features/state-backend/) for details.
 

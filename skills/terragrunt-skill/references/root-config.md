@@ -133,7 +133,7 @@ remote_state {
 Key features:
 - **Environment isolation**: `state_bucket_suffix` creates separate buckets
 - **Unique keys**: `path_relative_to_include()` ensures unique state per unit
-- **Locking**: Native S3 lockfile prevents concurrent modifications (OpenTofu >= 1.10)
+- **Locking**: Native S3 lockfile prevents concurrent modifications (OpenTofu >= 1.10 / Terraform >= 1.11)
 
 ### Catalog Configuration
 

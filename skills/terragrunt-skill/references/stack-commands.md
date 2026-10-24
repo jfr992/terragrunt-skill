@@ -1,5 +1,7 @@
 # Stack Commands
 
+> **Requires TG >= 0.78** (explicit stacks GA). On older versions, use classic `run-all`. See [version-compatibility.md](version-compatibility.md).
+
 ## Contents
 - Basic Operations
 - Targeting Specific Units
@@ -18,13 +20,13 @@
 terragrunt stack generate
 
 # Plan all units
-terragrunt stack run plan
+terragrunt stack run -- plan
 
 # Apply all units
-terragrunt stack run apply
+terragrunt stack run -- apply
 
 # Destroy all units
-terragrunt stack run destroy
+terragrunt stack run -- destroy
 
 # Get outputs from all units
 terragrunt stack output
@@ -35,23 +37,20 @@ terragrunt stack clean
 
 ## Targeting Specific Units
 
-Apply only specific units using `--filter` (modern) or `--queue-include-dir` (legacy):
+Apply only specific units using `--filter` (see the legacy mapping table below for `--queue-include-dir`):
 
 ```bash
-# Target a specific unit (modern filter syntax)
-terragrunt stack run apply --filter '.terragrunt-stack/argocd-registration'
-
-# Target a specific unit (legacy syntax)
-terragrunt stack run apply --queue-include-dir ".terragrunt-stack/argocd-registration"
+# Target a specific unit
+terragrunt stack run --filter './.terragrunt-stack/argocd-registration' -- apply
 
 # Target multiple specific units
-terragrunt stack run plan --filter '.terragrunt-stack/rds' --filter '.terragrunt-stack/secrets'
+terragrunt stack run --filter './.terragrunt-stack/rds' --filter './.terragrunt-stack/secrets' -- plan
 
 # Target by pattern (all units starting with "db-")
-terragrunt stack run plan --filter '.terragrunt-stack/db-*'
+terragrunt stack run --filter './.terragrunt-stack/db-*' -- plan
 
 # Exclude specific units
-terragrunt stack run apply --filter '!.terragrunt-stack/expensive-resource'
+terragrunt stack run --filter '!./.terragrunt-stack/expensive-resource' -- apply
 ```
 
 ## Filter Expressions
@@ -66,29 +65,48 @@ terragrunt stack run apply --filter '!.terragrunt-stack/expensive-resource'
 
 ```bash
 # Target unit and its dependencies
-terragrunt stack run apply --filter '.terragrunt-stack/api...'
+terragrunt stack run --filter './.terragrunt-stack/api...' -- apply
 
 # Target unit and its dependents (reverse)
-terragrunt stack run apply --filter '.../.terragrunt-stack/vpc'
+terragrunt stack run --filter '.../.terragrunt-stack/vpc' -- apply
 
 # Combine filters (intersection)
-terragrunt stack run plan --filter '.terragrunt-stack/** | type=unit'
+terragrunt stack run --filter './.terragrunt-stack/** | type=unit' -- plan
 
 # Git-based: only changed units since main
-terragrunt stack run plan --filter '[main...HEAD]'
+terragrunt stack run --filter '[main...HEAD]' -- plan
 
 # Use filters file
-terragrunt stack run apply --filters-file my-filters.txt
+terragrunt stack run --filters-file my-filters.txt -- apply
 ```
+
+## Terragrunt 1.2 Flags
+
+```bash
+# Bound discovery to the current directory (don't walk into parents/siblings)
+terragrunt run --all --discovery-boundary . -- plan
+
+# Dependency-graph operand: everything in . that is a dependency of vpc
+terragrunt run --all --filter '(.)...{vpc}' -- plan
+
+# Skip before/after/error hooks (e.g. in read-only CI plans)
+terragrunt stack run --no-hooks -- plan
+
+# Write per-run profiling data for performance analysis
+terragrunt run --all --profile-dir ./tg-profile -- plan
+```
+
+Ref: https://docs.terragrunt.com/reference/experiments/completed/ , https://github.com/gruntwork-io/terragrunt/releases/tag/v1.2.0
+
 
 ## Parallelism Control
 
 ```bash
 # Limit concurrent unit execution
-terragrunt stack run apply --parallelism 3
+terragrunt stack run --parallelism 3 -- apply
 
 # Save plans to directory structure
-terragrunt stack run plan --out-dir ./plans
+terragrunt stack run --out-dir ./plans -- plan
 ```
 
 ## Visualize Dependencies

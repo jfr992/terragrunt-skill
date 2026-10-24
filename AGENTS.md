@@ -1,0 +1,137 @@
+# AGENTS.md - Contributor Guide
+
+Context for any coding agent (Codex, Cursor, Gemini CLI, Claude Code, ...) or human working on the terragrunt-skill repository. `CLAUDE.md` just imports this file.
+
+**Before committing:** run `./scripts/check-skill.sh` (must print `OK`).
+
+**Major releases:** the release workflow uses the **Angular** preset, which does **not** recognise `feat!:` by itself (a bare `feat!:` commit gives a patch bump). Add a `BREAKING CHANGE:` footer to the commit body to get a major bump.
+
+## Repository Architecture
+
+This skill uses **progressive disclosure** to minimize token usage:
+
+- **SKILL.md** (~150 lines): Core patterns for Terragrunt stacks, units, and catalog structure
+- **references/**: Extended documentation loaded on demand
+  - `cas.md`: Content Addressable Store — default dedup, update_source_with_cas for self-contained catalog stacks
+  - `catalog-scaffolding.md`: Interactive catalog browsing and unit scaffolding
+  - `catalog-structure.md`: Directory layout and organization of reusable units and stacks
+  - `cicd-github.md`: GitHub Actions pipelines (quick reference and OIDC patterns)
+  - `cicd-gitlab.md`: GitLab CI pipelines (templates, AWS/GCP OIDC auth, unit targeting)
+  - `cicd-pipelines.md`: Shared CI/CD concepts, run reports, IAM/OIDC cloud setup
+  - `classic-live-structure.md`: Traditional account/region/environment hierarchy pattern
+  - `dependencies.md`: Unit interdependency patterns (values pattern + autoinclude) and DAG management
+  - `expansion.md`: `expansion {for_each|count}` blocks on units/stacks/dependencies (Terragrunt 1.2)
+  - `discovery-commands.md`: terragrunt find and exploration commands
+  - `live-structure.md`: Explicit stacks directory layout and organization
+  - `modules-monorepo.md`: Monorepo vs per-repo module versioning strategies
+  - `multi-account.md`: Cross-account role assumption and AWS account strategy
+  - `naming.md`: Repository and resource naming conventions
+  - `patterns.md`: Terragrunt patterns guide and repository separation
+  - `performance.md`: Provider caching, benchmarking tools, and optimization
+  - `root-config.md`: Root.hcl configuration and locals setup
+  - `stack-commands.md`: Stack generation and execution commands
+  - `state-management.md`: State backend configuration: native S3 lockfile (OpenTofu >= 1.10 / Terraform >= 1.11) and legacy DynamoDB patterns
+  - `version-compatibility.md`: Terragrunt 0.68→1.2 feature matrix, old→new CLI mapping, OpenTofu vs Terraform
+- **scripts/check-skill.sh**: Skill lint (description length, line count, stale experiment flags, broken reference links, stale `>= 1.2` version claims, version scope consistent across SKILL.md and the manifests)
+- **plugin.json** + **.agents/plugins/marketplace.json**: Codex / Agent Plugins manifest and repo marketplace (`codex plugin marketplace add jfr992/terragrunt-skill`)
+- **.claude-plugin/**: Claude Code marketplace distribution configuration (kept for Claude Code users; the skill itself is agent-agnostic)
+- **.github/workflows/**: CI/CD for validation and automated releases
+
+## Content Philosophy
+
+### Include in SKILL.md
+- Terragrunt-specific patterns (stacks, units, values pattern)
+- Decision frameworks with concrete examples
+- Unit interdependency patterns
+- Stack filtering and targeting commands
+- Dependency wiring (`autoinclude` first; legacy `"../unit"` reference resolution)
+
+### Exclude from SKILL.md
+- Generic Terraform/OpenTofu syntax
+- Provider-specific resource details
+- Basic HCL language features
+- Content covered by official Terragrunt documentation
+
+### Suggestions vs Statements
+- Use suggestion language ("Consider...", "Recommended") for patterns that have trade-offs
+- Use definitive statements only for syntax requirements or Terragrunt-specific behavior
+
+## Key Patterns
+
+**Watch (active experiments — do not teach until GA):** `deep_merge()` HCL function (deep-merge), `TG_CTX_*` hook env vars (hook-context-env). (`--no-hooks` and the azurerm backend are GA since 1.2.0 and may be taught.)
+
+### Values Pattern
+Units receive ALL configuration through the `values` object, enabling stacks to configure units without modifying unit code.
+
+### Autoinclude (Terragrunt 1.1+)
+Dependencies declared in `autoinclude` blocks inside stack `unit` blocks; generates `terragrunt.autoinclude.hcl`. This is the default for new work (see `dependencies.md`); the values-pattern reference resolution is legacy, kept for existing catalogs.
+
+### Reference Resolution (legacy)
+Units resolve symbolic references like `"../acm"` to actual dependency outputs, allowing stacks to wire dependencies declaratively.
+
+### Catalog vs Live
+- **Catalog**: Reusable units and template stacks (version-controlled patterns)
+- **Live**: Environment-specific deployments consuming the catalog
+- **Architecture Options**:
+  - Option A: Modules in separate repos (independent versioning, dedicated CI/CD)
+  - Option B: Modules in catalog repo (simpler structure, single versioning)
+
+## Development Workflow
+
+### Testing Changes
+1. Load the updated skill in your agent (e.g. symlink into `~/.agents/skills/`)
+2. Test against real Terragrunt projects
+3. Verify generated configurations are valid HCL
+4. Check that patterns match Terragrunt best practices
+
+### Validation
+- Run `terragrunt hcl fmt --check` on generated examples
+- Verify stack files with `terragrunt stack generate`
+- Test unit dependency resolution
+- CI validates SKILL.md frontmatter and marketplace.json on every PR
+
+## File Structure
+
+```
+terragrunt-skill/
+├── AGENTS.md                   # This file (contributor guide)
+├── CLAUDE.md                   # `@AGENTS.md` import for Claude Code
+├── scripts/check-skill.sh      # Skill lint
+├── README.md                   # Repository documentation
+├── evaluations/                # Trigger/behavior eval scenarios (manual harness)
+│   └── evaluations.json
+├── .claude-plugin/
+│   ├── plugin.json             # Plugin manifest
+│   └── marketplace.json        # Claude Code marketplace distribution
+├── .github/workflows/
+│   ├── validate.yml            # Skill validation (frontmatter, links)
+│   └── automated-release.yml   # Conventional commits → GitHub releases
+├── skills/
+│   └── terragrunt-skill/
+│       ├── SKILL.md            # Main skill (Agent Skills format)
+│       ├── references/         # Extended documentation
+│       └── assets/
+│           ├── catalog-structure/  # Example catalog layout
+│           ├── live-structure/     # Example live repo layout
+│           └── images/             # Screenshots and diagrams
+└── test-output/                # Generated test examples
+```
+
+## Quality Standards
+
+Contributions should:
+- Follow existing code style and patterns
+- Include both AWS and GCP examples where applicable
+- Use generic placeholders (`YOUR_ORG`, `123456789012`) not real values
+- Provide mock outputs for unit dependencies
+- Document trade-offs for architectural decisions
+
+## References
+
+- [Terragrunt Documentation](https://docs.terragrunt.com/)
+- [Terragrunt Stacks](https://docs.terragrunt.com/features/stacks/)
+- [Terragrunt Filters](https://docs.terragrunt.com/features/filter/)
+- [Terragrunt State Backend](https://docs.terragrunt.com/features/units/state-backend/)
+- [Terragrunt Catalog](https://docs.terragrunt.com/features/catalog/)
+- [Boilerplate](https://github.com/gruntwork-io/boilerplate) - Template generation for scaffolding
+- [OpenTofu Documentation](https://opentofu.org/docs/)

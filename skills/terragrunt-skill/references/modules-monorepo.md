@@ -76,3 +76,38 @@ catalog {
 - Its release cadence diverges (e.g., weekly networking changes vs frozen database module)
 - Different team owns it and needs separate review/CODEOWNERS
 - It's consumed by other orgs/repos that shouldn't see the rest
+
+## Other source types
+
+### OCI registries
+
+```hcl
+# terragrunt.hcl
+terraform {
+  source = "oci://ghcr.io/acme/tofu-modules/vpc?tag=1.0.0"
+}
+```
+
+```hcl
+# terragrunt.stack.hcl
+unit "vpc" {
+  source = "oci://ghcr.io/acme/tofu-units/vpc?tag=1.0.0"
+  path   = "vpc"
+}
+```
+
+- Pin `?tag=` or `?digest=`; with neither, `latest` is used — avoid.
+- `//subdir` works (`oci://ghcr.io/acme/modules//vpc?tag=1.0.0`).
+- Credentials come from tofurc `oci_credentials`, Docker config, or credential helpers (e.g. `ecr-login`).
+- Docs: [OCI sources](https://docs.terragrunt.com/features/units/oci)
+
+### Registry version constraints
+
+```hcl
+terraform {
+  source  = "tfr://registry.opentofu.org/terraform-aws-modules/vpc/aws"
+  version = "~> 3.3"
+}
+```
+
+The constraint is resolved on every run. `--source` overrides accept exact pins only. Docs: [completed experiments: version-attribute](https://docs.terragrunt.com/reference/experiments/completed/#version-attribute)

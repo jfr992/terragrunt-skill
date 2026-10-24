@@ -377,7 +377,6 @@ locals {
 
 Results in:
 - `tfstate-myproject-nonprod-staging-us-east-1`
-- `tfstate-locks-myproject-nonprod-staging-us-east-1`
 
 ## Git URL Syntax
 

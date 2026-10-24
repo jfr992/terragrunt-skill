@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "terragrunt-skill",
+  "version": "1.8.0",
+  "description": "Terragrunt (0.68 to 1.2) infrastructure-as-code patterns with OpenTofu or Terraform: stacks, units, catalogs, remote state, version compatibility, CI/CD",
+  "author": {
+    "name": "Juan Reyes",
+    "email": "juanfelipereyesmarles@gmail.com",
+    "url": "https://github.com/jfr992"
+  },
+  "repository": "https://github.com/jfr992/terragrunt-skill",
+  "license": "Apache-2.0",
+  "keywords": ["terragrunt", "opentofu", "terraform", "infrastructure-as-code", "stacks", "ci-cd"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Terragrunt",
+        "shortDescription": "Terragrunt 0.68 to 1.2 (OpenTofu or Terraform): stacks, units, catalogs, state, CI/CD",
+        "developerName": "jfr992",
+        "category": "Coding",
+        "websiteURL": "https://github.com/jfr992/terragrunt-skill",
+        "defaultPrompt": ["Use $terragrunt-skill to design or review a Terragrunt stack."]
+      }
+    }
+  }
+}
