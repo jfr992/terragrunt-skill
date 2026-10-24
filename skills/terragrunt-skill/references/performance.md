@@ -9,6 +9,7 @@
 - Dependency Outputs from State (default since 1.2)
 - Advanced: Two-Layer Provider Caching
 - Explicit vs Implicit Stacks
+- Older Versions (0.68 – 0.86)
 - Measuring Performance
 - CI/CD Optimization
 - Parallelism Tuning
@@ -27,7 +28,7 @@ For a 10-person team running 35 Terragrunt operations daily, this translates to 
 
 ## Provider Caching (OpenTofu >= 1.10: automatic)
 
-With OpenTofu >= 1.10, Terragrunt **automatically** sets `TF_PLUGIN_CACHE_DIR` per run — no flags needed. This is stable and on by default.
+With OpenTofu >= 1.10, Terragrunt **automatically** sets `TF_PLUGIN_CACHE_DIR` per run — no flags needed. On by default since **0.89** (0.86 needs `TG_EXPERIMENT=auto-provider-cache-dir`; 0.68 has no equivalent — use the cache server, see [Older Versions](#older-versions-068--086)).
 
 ```bash
 # Override the cache location if needed
@@ -74,7 +75,9 @@ Ref: https://docs.terragrunt.com/reference/experiments/completed/#dependency-fet
 
 ## Advanced: Two-Layer Provider Caching
 
-For maximum performance, implement a two-layer caching architecture:
+> **Benchmark caveat:** in the re-run below, cache server + mirror together was flaky (0.68) and slow (1.2.1). Use the mirror only when the public registry is unreachable or slow.
+
+Two-layer caching architecture:
 
 ### Layer 1: Terragrunt Provider Cache Server
 
@@ -119,14 +122,68 @@ terragrunt run --all \
 
 ## Explicit vs Implicit Stacks
 
-Explicit stacks (using `terragrunt.stack.hcl`) provide better performance than implicit dependency resolution:
+Earlier figures in this file (implicit 119.7s vs explicit 69.3s cold) came from [jfr992/terragrunt-cache-test](https://github.com/jfr992/terragrunt-cache-test) on 0.86. Re-benchmarking that repo (below) shows the gap is **not** caused by stacks changing provider downloads: its explicit catalog units have no `dependency` blocks, while the implicit units depend on `eks`. With dependencies removed from the implicit fixture, implicit matches or beats explicit (1.2.1 fresh-checkout 3.3s implicit-no-deps vs 15.8s explicit; warm 2.1s vs 2.7s). The win comes from fewer dependency resolutions/parses and more parallelism — consistent with the Gruntwork maintainer's hypothesis. Choose explicit stacks for structure and reuse, not for speed; for speed, keep the dependency graph shallow.
 
-| Scenario | Implicit | Explicit | Speedup |
-|----------|----------|----------|---------|
-| Cold cache | 119.7s | 69.3s | 1.73x |
-| Warm cache | 35.4s | 17.2s | 2.07x |
+## Older Versions (0.68 – 0.86)
 
-This skill uses explicit stacks by default.
+Env names differ by version (from `--help` of each binary):
+
+| Setting | 0.68 – 0.7x | 0.78+ / 1.x |
+|---|---|---|
+| Provider cache server | `TERRAGRUNT_PROVIDER_CACHE=1` | `TG_PROVIDER_CACHE=1` |
+| Cache dir | `TERRAGRUNT_PROVIDER_CACHE_DIR` | `TG_PROVIDER_CACHE_DIR` |
+| Module download dir | `TERRAGRUNT_DOWNLOAD` (**not** `_DOWNLOAD_DIR`) | `TG_DOWNLOAD_DIR` |
+
+`TG_*` names are **ignored** by 0.68 (benchmarked: same time as no cache). Recipe for 0.68:
+
+```bash
+export TERRAGRUNT_PROVIDER_CACHE=1
+export TERRAGRUNT_PROVIDER_CACHE_DIR=$CI_CACHE/providers   # persist between CI jobs
+export TERRAGRUNT_DOWNLOAD=$CI_CACHE/modules
+terragrunt run-all plan --terragrunt-non-interactive
+# Commit .terraform.lock.hcl per unit so fresh checkouts hit the cache
+```
+
+On 0.86 use the `TG_*` names, or `TG_EXPERIMENT=auto-provider-cache-dir` (OpenTofu >= 1.10). On 0.89+ do nothing — auto provider cache dir is default. A network mirror (boring-registry) only replaces the upstream registry; it does not avoid per-unit provider installs, so it helps only on a slow/blocked internet link.
+
+### Benchmark: terragrunt-cache-test re-run (this PR, 2026-10-24)
+
+Environment: Linux x86_64 box, OpenTofu 1.10.6, 3 units (`aws`, `kubernetes`, `tls`, `null`, `helm`, `kubectl` providers, ~870 MB), local state, boring-registry pull-through on MinIO (chainguard image) on localhost. Median seconds of 3 runs (0.68–0.86 rows) or 2 runs (rest). **cold** = all caches wiped; **checkout** = fresh `.terragrunt-cache` and lock files committed, provider cache kept (typical CI with a persisted cache); **warm** = re-run in place.
+
+| TG | Layout | Config | cold | checkout | warm |
+|---|---|---|---|---|---|
+| 0.68.0 | implicit | nothing | 17.8 | 25.3 | 4.7 |
+| 0.68.0 | implicit | `TERRAGRUNT_*` cache server | 15.0 | **12.4** | 4.9 |
+| 0.68.0 | implicit | `TG_*` names (ignored) | 17.2 | 16.6 | 4.4 |
+| 0.68.0 | implicit | mirror | 16.0 | 21.0 | 4.6 |
+| 0.68.0 | implicit | mirror + cache server | 5.9† | fail | fail |
+| 0.86.0 | implicit | nothing | 18.7 | 26.9 | 5.8 |
+| 0.86.0 | implicit | `TG_*` cache server | 13.6 | 9.7 | 4.7 |
+| 0.86.0 | implicit | auto-provider-cache-dir experiment | 20.8 | **7.7** | 4.6 |
+| 0.86.0 | explicit | nothing | 14.3 | 10.0 | 2.7 |
+| 0.89.0 | implicit | default (auto dir) | 21.0 | **6.8** | 4.6 |
+| 0.89.0 | implicit | `TG_*` cache server | 13.0 | 9.6 | 5.7 |
+| 0.89.0 | explicit | default (auto dir) | 13.6 | 14.8 | 2.2 |
+| 1.2.1 | implicit | default (auto dir + CAS) | 14.4 | **6.8** | 4.5 |
+| 1.2.1 | implicit | `--no-auto-provider-cache-dir` | 17.1 | 23.6 | 4.7 |
+| 1.2.1 | implicit | `TG_*` cache server | 13.8 | 7.8 | 4.2 |
+| 1.2.1 | implicit | cache server + mirror | 13.1 | 175.5‡ | 4.7 |
+| 1.2.1 | implicit, no deps | default | 15.0 | **3.3** | 2.1 |
+| 1.2.1 | implicit, no deps | `TG_*` cache server | 7.8 | 3.8 | 2.2 |
+| 1.2.1 | explicit | default | 17.9 | 15.8 | 2.7 |
+| 1.2.1 | explicit | `TG_*` cache server | 8.7 | 4.5 | 3.4 |
+| 1.2.1 | git sources | CAS on (default) | 20.6 | 6.6 | 4.6 |
+| 1.2.1 | git sources | `--no-cas` | 21.2 | 6.1 | 4.5 |
+
+† failed after the first cold run: lock-file checksum mismatch between mirror and cache server. ‡ 46s and 305s — mirror stalls under concurrent pulls.
+
+Takeaways:
+- **Fresh checkout with a persisted cache is what matters in CI.** 0.68: cache server cuts 25s → 12s. 0.89+/1.2: auto provider cache dir is already best (≈7s), the legacy cache server adds nothing on fresh checkouts and only helps fully cold runs (~14s vs ~20s, since it de-duplicates downloads across units).
+- **Warm runs (~4.5s implicit, ~2.5s explicit/no-deps) are parse + dependency + plan time**, independent of caching. The implicit/explicit gap there is dependency resolution, not providers.
+- **CAS made no measurable difference** here (3 small local-git modules); expect it to matter with many units sharing large remote repos.
+- **Don't combine the cache server with a network mirror**: it was flaky (checksum mismatches) on 0.68 and very slow on 1.2.1. Pick one; prefer the plugin cache dir/cache server, use a mirror only for air-gapped networks.
+- Intermittent "does not match any of the checksums recorded in the dependency lock file" on warm runs appeared with every shared-cache mode (5 of ~60 runs), consistent with concurrent units sharing one cache. If you see it, rerun or lower `--parallelism`.
+- 0.86 → 0.89 GA'd the auto provider cache dir; no other large difference measured for this fixture.
 
 ## Measuring Performance
 
