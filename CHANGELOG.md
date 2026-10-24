@@ -1,18 +1,36 @@
-# [2.0.0](https://github.com/jfr992/terragrunt-skill/compare/v1.8.0...v2.0.0) (2026-10-24)
+# [3.0.0](https://github.com/jfr992/terragrunt-skill/compare/v1.3.0...v3.0.0) (2026-10-24)
 
 
-* feat!: agent-agnostic skill metadata ([2a21abc](https://github.com/jfr992/terragrunt-skill/commit/2a21abc5fd4cac1f68ea751ba4d558807f983b5b))
+### Bug Fixes
+
+* align remaining backend examples with use_lockfile default ([4a2fe2e](https://github.com/jfr992/terragrunt-skill/commit/4a2fe2e07c2a45db7503624ffddd30541b409e27))
+* align SKILL.md name with marketplace.json plugin name ([80a4c9d](https://github.com/jfr992/terragrunt-skill/commit/80a4c9dc51ecfeffb2c64207da8de7309f4dc44f))
+* correct heading levels and remove stray validation temp files ([bd63de8](https://github.com/jfr992/terragrunt-skill/commit/bd63de8484bb177385b95de78b6681a9641ac6b3))
+* restructure repo as proper Claude Code plugin ([#5](https://github.com/jfr992/terragrunt-skill/issues/5)) ([a41bcbc](https://github.com/jfr992/terragrunt-skill/commit/a41bcbcf94383090fce540b9d0f014a6aabf8be6))
+* update stale docs links and deprecated CLI forms ([1a668ef](https://github.com/jfr992/terragrunt-skill/commit/1a668ef5962b3f690e5298bb5fe64f3990791f63))
+
+
+* feat!: agent-agnostic skill metadata ([27bc8a9](https://github.com/jfr992/terragrunt-skill/commit/27bc8a9451a419748d2d6dfc1b7ee199cc5f21a2))
 
 
 ### Features
 
-* Terragrunt 1.2 coverage in SKILL.md ([36c920a](https://github.com/jfr992/terragrunt-skill/commit/36c920aa8a522fc3def8490eec027fc2b118e5af))
+* add architecture decision framework and new reference nav to SKILL.md ([d988d71](https://github.com/jfr992/terragrunt-skill/commit/d988d71cd09db9953da2a9b53e99ed8293eded5b))
+* add author metadata to plugin manifest ([a4835bd](https://github.com/jfr992/terragrunt-skill/commit/a4835bd7eedbea767878b2c9f71585b355c3cb16))
+* add classic implicit-stacks live structure reference ([443fcbe](https://github.com/jfr992/terragrunt-skill/commit/443fcbed7a45c9108e2aa549154b63973e9f996e))
+* add find/list/dag discovery commands reference ([622fb14](https://github.com/jfr992/terragrunt-skill/commit/622fb140fc2046d4ae440d489bbc6cf4eec6b816))
+* add modern caching, run reports, strict mode, errors block, feature flags ([1928366](https://github.com/jfr992/terragrunt-skill/commit/1928366fa8c0d13abeef7e4d0a5bb65e4e5f95af))
+* add modules monorepo pattern reference ([e61e056](https://github.com/jfr992/terragrunt-skill/commit/e61e0565229ec05ac862cea628f74ff207228624))
+* add Terragrunt 1.1 features — CAS, autoinclude, catalog redesign ([#7](https://github.com/jfr992/terragrunt-skill/issues/7)) ([8ddeef4](https://github.com/jfr992/terragrunt-skill/commit/8ddeef4f3e8e57875ee13915a14242b8111ed8a3))
+* modernize state management to use_lockfile and backend bootstrap ([6ffb656](https://github.com/jfr992/terragrunt-skill/commit/6ffb6566362c97b11e8ec38abad0d66d8613a17c))
+* refactor SKILL.md to navigation hub with progressive disclosure ([8ce8c02](https://github.com/jfr992/terragrunt-skill/commit/8ce8c02425f2cc3953167a326d0e0b36ed63a40e))
+* Terragrunt 1.2 coverage in SKILL.md ([6ae875d](https://github.com/jfr992/terragrunt-skill/commit/6ae875d1354b4892a5c2b216e325dcc99bb032e6))
 
 
 ### Performance Improvements
 
-* caveat old 3-unit table, add rigorous-bench results, drop unreproducible 1000-unit claims ([daf764e](https://github.com/jfr992/terragrunt-skill/commit/daf764e869cc6e980d46a50812a0deae3883285e))
-* publish only 30/100-unit benchmark data ([21e06ac](https://github.com/jfr992/terragrunt-skill/commit/21e06ace70308e1b88a6d261708653afa9489cae))
+* caveat old 3-unit table, add rigorous-bench results, drop unreproducible 1000-unit claims ([995dc85](https://github.com/jfr992/terragrunt-skill/commit/995dc85dad94a18251fa5a8c22706017cba1e14d))
+* publish only 30/100-unit benchmark data ([6c878d5](https://github.com/jfr992/terragrunt-skill/commit/6c878d572ef26110f966b2a6b1a8b3b59bd11c60))
 
 
 ### BREAKING CHANGES
@@ -21,51 +39,36 @@
 
 
 
-# [1.8.0](https://github.com/jfr992/terragrunt-skill/compare/v1.7.0...v1.8.0) (2026-07-07)
+# [1.3.0](https://github.com/jfr992/terragrunt-skill/compare/v1.2.0...v1.3.0) (2026-01-22)
 
 
 ### Features
 
-* add Terragrunt 1.1 features — CAS, autoinclude, catalog redesign ([#7](https://github.com/jfr992/terragrunt-skill/issues/7)) ([08f6d11](https://github.com/jfr992/terragrunt-skill/commit/08f6d117d990dd0ee56415710604d8c91d9c1e5a))
+* update CLAUDE.md with architecture options and validation workflow ([ade3bcb](https://github.com/jfr992/terragrunt-skill/commit/ade3bcba481c8f2850ce39ea5b465cd9e1c54210))
 
 
 
-# [1.7.0](https://github.com/jfr992/terragrunt-skill/compare/v1.6.0...v1.7.0) (2026-06-12)
+# [1.2.0](https://github.com/jfr992/terragrunt-skill/compare/v1.1.0...v1.2.0) (2026-01-22)
+
+
+### Features
+
+* update based on maintainer feedback and add validation ([7f7b7dc](https://github.com/jfr992/terragrunt-skill/commit/7f7b7dcc196da8261b14794e151aecc5dec36d62))
+
+
+
+# [1.1.0](https://github.com/jfr992/terragrunt-skill/compare/7a1582c3ab4598a0ca4fbdd4424f137ed8aa7d6d...v1.1.0) (2026-01-21)
 
 
 ### Bug Fixes
 
-* align remaining backend examples with use_lockfile default ([7c5490f](https://github.com/jfr992/terragrunt-skill/commit/7c5490febb5cd4620b139b2564783406a23f0995))
-* correct heading levels and remove stray validation temp files ([674187e](https://github.com/jfr992/terragrunt-skill/commit/674187e5532dc49b1db047bae882c53893c2ce82))
-* update stale docs links and deprecated CLI forms ([f606c65](https://github.com/jfr992/terragrunt-skill/commit/f606c658afc95243c5f392c6267a595d6cac5452))
+* correct test output to follow documented patterns ([5de3355](https://github.com/jfr992/terragrunt-skill/commit/5de3355bc8cda0e7df796ccbca6db1f72f5ccb84))
 
 
 ### Features
 
-* add architecture decision framework and new reference nav to SKILL.md ([4575df4](https://github.com/jfr992/terragrunt-skill/commit/4575df4283a91bb4fe1d5665c190d5bf43691506))
-* add classic implicit-stacks live structure reference ([955a9fa](https://github.com/jfr992/terragrunt-skill/commit/955a9faa96b38d7a72e73a788e71528330ff3485))
-* add find/list/dag discovery commands reference ([ff7aa9a](https://github.com/jfr992/terragrunt-skill/commit/ff7aa9ab18b9fd57d7c3d55b6c5f9fada4a4e34c))
-* add modern caching, run reports, strict mode, errors block, feature flags ([9cac17a](https://github.com/jfr992/terragrunt-skill/commit/9cac17ac6b0c0720fba63882219f5a3edfbe9b10))
-* add modules monorepo pattern reference ([16d836c](https://github.com/jfr992/terragrunt-skill/commit/16d836c72617ffb15ad963d76be542de3fe592c4))
-* modernize state management to use_lockfile and backend bootstrap ([60c43b6](https://github.com/jfr992/terragrunt-skill/commit/60c43b6e885845f4db01490cbc9c59bcd98c9909))
-
-
-
-# [1.6.0](https://github.com/jfr992/terragrunt-skill/compare/v1.5.1...v1.6.0) (2026-04-30)
-
-
-### Bug Fixes
-
-* restructure repo as proper Claude Code plugin ([#5](https://github.com/jfr992/terragrunt-skill/issues/5)) ([6d8505f](https://github.com/jfr992/terragrunt-skill/commit/6d8505fe110eb4423e1b62cc28858a75efc8e21c))
-
-
-### Features
-
-* add author metadata to plugin manifest ([87a1707](https://github.com/jfr992/terragrunt-skill/commit/87a1707510d594440c8cf9bb60a199d24c403079))
-
-
-
-## [1.5.1](https://github.com/jfr992/terragrunt-skill/compare/v1.5.0...v1.5.1) (2026-04-06)
+* add automated release workflow with conventional commits ([7a1582c](https://github.com/jfr992/terragrunt-skill/commit/7a1582c3ab4598a0ca4fbdd4424f137ed8aa7d6d))
+* update CI/CD pipelines for terragrunt stack commands ([19c6949](https://github.com/jfr992/terragrunt-skill/commit/19c6949b549ed402ee74558e9b59e2e180781e67))
 
 
 
