@@ -3,7 +3,7 @@
   "owner": {
     "name": "jfr992"
   },
-  "version": "1.8.0",
+  "version": "2.0.0",
   "metadata": {
     "description": "Agent-agnostic Terragrunt skill (Agent Skills format) for Terragrunt 0.68 to 1.2 with OpenTofu or Terraform - stacks, units, catalogs, remote state, version compatibility, CI/CD pipelines",
     "repository": "https://github.com/jfr992/terragrunt-skill",
