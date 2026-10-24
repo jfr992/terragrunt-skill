@@ -10,7 +10,7 @@ description: >-
 license: Apache-2.0
 compatibility: Terragrunt >= 0.68 (1.2 recommended); OpenTofu or Terraform. Version-specific guidance in references/version-compatibility.md. Agent-agnostic.
 metadata:
-  version: "2.0.0"
+  version: "3.0.0"
   terragrunt: ">=0.68 (target 1.2)"
   author: jfr992
 ---
